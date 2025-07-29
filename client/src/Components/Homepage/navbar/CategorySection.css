@@ -1,0 +1,37 @@
+.scrollable-list {
+    max-height: 200px; /* Set a max height for the columns */
+    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-x: hidden; /* Hide horizontal scrolling */
+    border: 1px solid #dee2e6; /* Add a border for a defined look */
+    border-radius: 0.25rem; /* Rounded corners */
+    background-color: #f8f9fa; /* Light background color */
+    cursor: pointer;
+  }
+  
+  /* Custom scrollbar styles */
+  .scrollable-list::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+  }
+  
+  .scrollable-list::-webkit-scrollbar-thumb {
+    background: #ec5d29; /* Color of the scrollbar thumb */
+    border-radius: 4px; /* Rounded corners for the thumb */
+  }
+  
+  .scrollable-list::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Color of the scrollbar track */
+  }
+  
+  /* Hover effect for list items */
+  .list-group-item-action:hover {
+    background-color: #ec5d29; /* Change background on hover */
+    color: white; /* Change text color on hover */
+  }
+  .link-category{
+    text-decoration: none;
+    color: black;
+  }
+  .link-category:hover{
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+  }

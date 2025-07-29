@@ -1,0 +1,255 @@
+/* Main Navbar Styles */
+.header {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  background-color: #343a40; 
+  z-index: 1000; 
+}
+
+.secondNavLinks{
+  cursor: pointer;
+  font-weight: 500;
+  color: #343a40;
+}
+
+.secondNavLinks:hover{
+  color: #ef5a2c;
+}
+
+.productTypeColor{
+  color: #eb5c26;
+}
+
+.nav__logo-img {
+  width: 200px; 
+  height: 60px;
+  margin-left: 40px;
+}
+
+.navbar {
+  padding: 0.5rem 0.5rem !important;
+}
+
+.navbar-nav {
+  flex-direction: row; 
+}
+
+.navbar-nav .nav-item {
+  margin: 0 0.5rem; 
+}
+
+.navbar-nav .nav-link {
+  color: rgb(0, 0, 0); 
+  font-size: 16px; 
+  transition: color 0.3s ease; 
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.nav-link:focus, .nav-link:hover {
+  color: #EE5E2A !important ;
+}
+
+.navbar-nav .nav-link.active {
+  color: #EE5E2A !important; 
+}
+
+.navbar-toggler {
+  border: none; 
+  color: rgb(0, 0, 0) !important; 
+  background-color: #18141429 !important;
+}
+
+.navbar-toggler-icon {
+  background: none; 
+}
+
+.collapse {
+  transition: all 0.3s ease; 
+}
+
+.collapse.show {
+  display: flex !important; 
+}
+
+.set-navbar {
+  background-color: #F0F0F0 !important;
+  border-bottom: 3px solid #EE5E2A;
+}
+
+/* Sub-navbar for mobile */
+.sub-nav-mobile {
+  display: none !important; /* Hide by default, will show on mobile */
+}
+
+.sub-nav-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #ddd;
+  margin: 10px 0;
+}
+
+.sub-nav-header {
+  color: #4C4C4C;
+  margin: 10px 0;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+}
+
+.sub-nav-link {
+  font-weight: 600 !important;
+  color: #4C4C4C !important;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 700px) {
+  .navbar-nav {
+    flex-direction: column; 
+    width: 100%; 
+    background-color: #F0F0F0; /* Match the main navbar */
+    align-items: center; 
+    padding-top: 1rem; 
+    padding-bottom: 1rem;
+  }
+
+  .navbar-nav .nav-link {
+    padding: 0.75rem; 
+    text-align: center;
+    color: #000; /* Keep text color consistent */
+  }
+  
+  /* Show the mobile sub-nav items */
+  .sub-nav-mobile {
+    display: block !important;
+    width: 100%;
+  }
+  
+  /* Hide the desktop sub-navbar */
+  .desktop-only {
+    display: none !important;
+  }
+  
+  /* Make the menu take full width */
+  .collapse.show {
+    display: block !important;
+  }
+  
+  /* Style for the sub-navigation links in mobile */
+  .sub-nav-link {
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .nav__logo-img {
+    width: 80px; 
+    height: 50px;
+    margin-left: 20px;
+  }
+
+  .navbar-nav .nav-link {
+    font-size: 14px; 
+  }
+}
+
+@media (min-width: 700px) {
+  .navbar-expand-lg .navbar-collapse {
+    justify-content: end;
+  }
+}
+
+/* Sub-Navbar Styles - Desktop version */
+.sub-navbar {
+  background-color: #4C4C4C;
+  padding: 0.8rem;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: center;
+  border-bottom-left-radius: 15px; /* Rounded bottom left */
+  border-bottom-right-radius: 15px; /* Rounded bottom right */
+}
+
+.sub-navbar ul {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-wrap: wrap;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Align items vertically */
+  gap: 5.5rem; /* Adds space between links */
+}
+
+.sub-navbar ul li {
+  margin: 0 1rem;
+}
+
+.sub-navbar ul li a {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: large;
+}
+
+.sub-navbar ul li a:hover {
+  color: #EE5E2A;
+}
+
+.signup-button{
+  border-radius: 25px;
+  background-color: #ee5a32;
+  padding: 1px 7px;
+}
+
+.color-set-white{
+  color: white;
+}
+
+.nav-item .cart-badge {
+  position: absolute;
+  top: -1px;
+  right: -4px;
+  background-color: #ff5722;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  border-radius: 50%;
+  padding: 1px 5px;
+}
+
+.currency-converter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.currency-converter label {
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  color: black;
+}
+
+.currency-converter select {
+  padding: 6px 10px;
+  font-size: 14px;
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.currency-converter select:focus {
+  border-color: #F05929;
+  outline: none;
+  box-shadow: 0 0 5px rgba(255, 102, 42, 0.5);
+}
+
+.currency-converter select option {
+  padding: 8px;
+}

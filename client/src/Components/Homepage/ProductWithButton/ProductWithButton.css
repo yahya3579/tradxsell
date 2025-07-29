@@ -1,0 +1,76 @@
+
+
+  .custom-btn {
+    background-color: #FFC6B8; /* Light peach color like the image */
+    border: none;
+    padding: 8px 16px;
+    border-radius: 25px; /* Fully rounded shape */
+    font-size: 14px;
+    font-weight: bold;
+    color: black;
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+    transition: background-color 0.3s ease;
+  }
+  
+  .custom-btn:hover {
+    background-color: #ffb0a0; /* Slightly darker peach for hover */
+  }
+  
+  .custom-btn a {
+    text-decoration: none;
+    color: black;
+    display: block;
+    width: 100%;
+  }
+  
+  
+  /* .gradient {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    border-radius: 0.6em;
+    margin-top: -0.25em;
+    background-image: linear-gradient(
+      rgba(0, 0, 0, 0),
+      rgba(0, 0, 0, 0),
+      rgba(0, 0, 0, 0.3)
+    );
+  } */
+  
+  .label {
+    position: relative;
+    top: -1px;
+  }
+  
+  .transition {
+    transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    transition-duration: 500ms;
+    background-color: #ff8d63;
+    border-radius: 9999px;
+    width: 0;
+    height: 0;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  button:hover .transition {
+    width: 14em;
+    height: 14em;
+  }
+  
+  button:active {
+    transform: scale(1);
+  }
+  
+
+  @media (max-width:400px){
+    button {
+        font-size: 11px;
+      }
+  }

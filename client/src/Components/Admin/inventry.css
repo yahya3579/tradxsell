@@ -1,0 +1,164 @@
+.inventry-dashboard{
+    background-color: #121212;
+    color: #E0E0E0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    
+}
+
+@media(max-width: 991px){
+    .inventry-dashboard{
+        flex-direction:column;
+    }
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #6c757d;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .user-icon {
+    display: flex;
+    align-items: center;
+    margin-right: 0.5rem;
+  }
+  
+  .user-avatar {
+    background-color: #EF5B2B;
+    color: #121212;
+    font-weight: bold;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Stats section styling */
+  .stats-card {
+    padding: 1rem;
+    background-color: #343a40;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stats-card:hover {
+    background-color: #59626b;
+  }  
+  .stats-title {
+    font-size: 16px;
+    margin-bottom: 0.625rem;
+  }
+  
+  .stats-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #EF5B2B;
+  }
+  
+  /* Chart and Reviews section styling */
+  .chart-container {
+    padding: 1rem;
+    background-color: #343a40;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .chart-title {
+    font-size: 18px;
+    margin-bottom: 0.9375rem;
+  }
+  
+  .chart-wrapper {
+    height: 300px;
+    overflow: auto;
+  }
+  
+  .reviews-container {
+    padding: 1rem;
+    background-color: #343a40;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    max-height: 380px;
+    /* overflow-y: auto; */
+  }
+  
+  .review-item {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #6c757d;
+  }
+  
+  .review-username {
+    color: #EF5B2B;
+  }
+  
+.status-button{
+    cursor: pointer;
+}
+
+.product-table-container {
+    border-radius: 8px;
+  }
+  
+  .table-responsive {
+    max-height: 400px; /* Set a max-height for vertical scroll */
+  }
+  
+  .table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .table thead {
+    background-color: #343a40; /* Dark header background */
+    color: #ffffff;
+    position: sticky;
+    top: 0; /* Make the header sticky */
+    z-index: 1;
+  }
+  
+  .table th,
+  .table td {
+    padding: 12px 15px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  
+  .table tbody tr:nth-child(odd) {
+    background-color: #f2f2f2; /* Light grey background for alternating rows */
+  }
+  
+  .table tbody tr:nth-child(even) {
+    background-color: #ffffff;
+  }
+  
+  .table tbody tr:hover {
+    background-color: #e9ecef; /* Slight hover effect */
+  }
+  
+  .table-hover tbody tr:hover td {
+    color: #000;
+    cursor: pointer;
+  }
+  
+  .shadow-sm {
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+  }
+  

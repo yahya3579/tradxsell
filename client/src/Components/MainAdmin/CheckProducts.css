@@ -1,0 +1,21 @@
+.SideNavbarTopcontainer{
+    display: flex;
+    background-color: rgb(26, 26, 26);
+    min-height: 100vh;
+    color: rgb(255, 255, 255);
+}
+.mainContent{
+    flex: 1 1 0%;
+    margin-left: 240px;
+    transition: margin-left 0.3s;
+    background-color: rgb(18, 18, 18);
+}
+
+@media(max-width: 800px){
+    .mainContent{
+        margin-left: 0px;
+    }
+    .SideNavbarTopcontainer{
+        flex-direction: column;
+    }
+}

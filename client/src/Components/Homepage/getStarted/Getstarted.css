@@ -1,0 +1,64 @@
+/* .responsive-text {
+    font-size: 20px;
+  }
+  .custombutton{
+    padding: 15px 30px;
+  }
+  
+
+  @media (max-width: 768px) {
+    .responsive-text {
+      font-size: 12px;
+    }
+    .custombutton {
+      padding: 10px 10px;
+    }
+  } */
+
+
+  .responsive-text {
+    font-size: 20px;
+  }
+  
+  .custombutton {
+    padding: 15px 30px;
+    width: 180px;
+    max-width: 100%;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 992px) {
+    .responsive-text {
+      font-size: 16px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .responsive-text {
+      font-size: 14px;
+    }
+  
+    .custombutton {
+      padding: 10px 20px;
+      font-size: 14px;
+      width: 100%;
+    }
+  
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .responsive-text {
+      font-size: 12px;
+    }
+  
+    .custombutton {
+      font-size: 13px;
+      padding: 8px 16px;
+    }
+  }
+  

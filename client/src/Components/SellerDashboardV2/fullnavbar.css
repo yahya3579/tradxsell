@@ -1,0 +1,77 @@
+.container-navbar{
+  max-width: 1500px;
+}
+/* Navbar styles */
+.navbar {
+    background-color: #343a40; /* Dark color for navbar */
+  }
+  
+  .nav-link {
+    font-size: 16px;
+    /* font-weight: 500; */
+  }
+  
+  .nav-link:hover {
+    color: #d4d4d4 !important; /* Slightly lighter hover color */
+  }
+  /* Sidebar styles */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    height: 100%;
+    width: 250px;
+    background-color: #ca5b3d;
+    transition: all 0.4s;
+    z-index: 1040;
+    overflow-y: auto;
+    box-shadow: 3px 0px 5px rgba(0, 0, 0, 0.5);
+  }
+  
+  .sidebar.open {
+    left: 0;
+  }
+  
+  .sidebar ul li {
+    padding: 10px 20px;
+  }
+  
+  .sidebar ul li a {
+    font-size: 13px;
+    color: #ffffff;
+    text-decoration: none;
+  }
+  
+  .sidebar ul li a:hover {
+    color: #e1e1e1;
+    font-weight: 600;
+  }
+  
+  /* Dropdown menu styles */
+  .sidebar ul li ul {
+    display: none; /* Initially hide dropdown */
+  }
+  
+  .sidebar ul li a {
+    cursor: pointer;
+  }
+  
+  .sidebar ul li ul.d-block {
+    display: block;
+  }
+  
+  /* Overlay for closing sidebar */
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1030;
+  }
+  .custom-sidebar-nav li{
+    width: 100%;
+    border-bottom: 1px solid white;
+    padding: 0;
+  }

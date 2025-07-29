@@ -1,0 +1,60 @@
+.card {
+    border-radius: 25px;
+    border: 0;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for background and text color */
+}
+
+.card-body {
+    height: 270px;
+}
+
+.card-text {
+    text-align: justify;
+}
+
+/* Hover effect for changing background and text color */
+.card:hover {
+    background-color: #EF5B2D;
+    color: white;
+}
+
+/* Ensure that text color inside the card also changes to white */
+.card:hover .card-title,
+.card:hover .card-text {
+    color: white;
+}
+
+.icon-color-blue{
+    --bs-text-opacity: 1;
+    color: rgba(var(--bs-primary-rgb), var(--bs-text-opacity));
+}
+
+.icon-color-green{
+    --bs-text-opacity: 1;
+    color: rgba(var(--bs-success-rgb), var(--bs-text-opacity));
+}
+
+.icon-color-yellow{
+    --bs-text-opacity: 1;
+    color: rgba(var(--bs-warning-rgb), var(--bs-text-opacity));
+}
+
+.icon-color-skyblue{
+    --bs-text-opacity: 1;
+    color: rgba(var(--bs-info-rgb), var(--bs-text-opacity));
+}
+
+
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .card-body {
+        height: 100%;
+        padding: 1.5rem 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-body {
+        height: 100%;
+    }
+}

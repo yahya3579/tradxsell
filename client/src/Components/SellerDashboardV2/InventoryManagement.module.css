@@ -1,0 +1,42 @@
+/* Styles for the navigation bar */
+.navbar {
+    background-color: #212429;
+    padding: 1rem;
+  }
+  
+  .navbarBrand {
+    font-size: 1rem;
+    color: #ffffff;
+  }
+  
+  /* Styles for navigation buttons */
+  .navButton {
+    border: none;
+    background-color: transparent;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    margin-right: 0.5rem;
+    cursor: pointer;
+    font-size: 0.7rem;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .navButton:hover {
+    background-color: #f2582c;
+    color: #ffffff;
+  }
+  
+  /* Active tab style */
+  .activeTab {
+    background-color: #f2582c;
+    color:white;
+    border-radius: 4px;
+  }
+  
+  /* Tab content styling */
+  .tabContent {
+    padding: 1.5rem;
+  }
+  
+
+  

@@ -1,0 +1,73 @@
+/* SalesDashboardHeader.module.css */
+
+.header {
+    background-color: #f8f9fa; /* Light background */
+    border-bottom: 1px solid #dee2e6; /* Light border */
+    padding: 1rem 0;
+  }
+  
+  .title {
+
+    font-size: 18px;
+  }
+  .button {
+    min-width: 90px;
+    font-size: 0.7rem;
+    padding: 0.3rem 1.25rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .button:hover {
+    background-color: rgba(0, 0, 0, 0.05); 
+    color: black;
+  }
+  .snapshotTitle{
+    color: rgb(76, 76, 76);
+    font-size: 14px;
+  }
+  .tokenText{
+    font-size: 12px;
+  }
+
+
+  /* StatsSection.module.css */
+.statCard {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.statTitle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6c757d; /* Light gray for the title */
+}
+
+.statCount {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #343a40; /* Darker color for the count */
+}
+
+.compareSalesSection {
+  background-color: #f8f9fa; /* Light background color */
+  border-radius: 10px; /* Rounded corners */
+}
+/* 
+.button {
+  font-weight: 600;
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+.btn-outline-primary:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #6c757d;
+  color: white;
+} */

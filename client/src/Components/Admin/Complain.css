@@ -1,0 +1,13 @@
+.complain-container{
+    display: flex;
+    min-height: 100vh;
+    background-color: rgb(18, 18, 18);
+    color: rgb(224, 224, 224);
+}
+
+
+@media(max-width: 991px){
+    .complain-container{
+        flex-direction:column;
+    }
+}

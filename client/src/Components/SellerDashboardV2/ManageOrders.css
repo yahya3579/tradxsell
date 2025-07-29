@@ -1,0 +1,27 @@
+.ManageOrder{
+    color: rgb(224, 224, 224);
+    display: flex;
+    background-color: rgb(255, 255, 255);
+    min-height: 100vh;
+}
+
+@media(max-width: 991px){
+    .ManageOrder{
+        flex-direction:column;
+    }
+}
+
+.card-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+  }
+
+
+  .card-row{
+    display: flex;
+    flex-direction: row;
+    align-items: start;
+    justify-content: start;
+  }

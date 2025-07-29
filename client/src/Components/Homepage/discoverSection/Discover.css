@@ -1,0 +1,40 @@
+.bg-custom{
+    background-color: #f4f4f4;
+}
+/* .carousel-control-prev,
+.carousel-control-next {
+  position: absolute;
+  top: 50%; 
+  transform: translateY(-50%); 
+  width: 5%; 
+}
+
+ */
+
+
+.carousel-control-prev,
+.carousel-control-next {
+  background-color: #EF5B2B; /* Background color for the arrows */
+  border-radius: 50%; /* Optional: makes the background round */
+  color: white; /* Arrow color */
+  opacity: inherit;
+  width: 45px;
+  height: 45px;
+  position: absolute;
+  top: 50%; 
+  transform: translateY(-50%); 
+ 
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+  background-color: #d45a27; /* Darker shade on hover (optional) */
+}
+
+.carousel-control-prev {
+    left: 1%; 
+  }
+  
+  .carousel-control-next {
+    right: 1%; 
+  }

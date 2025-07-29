@@ -1,0 +1,54 @@
+/* Custom styles for Help Center */
+.bg-light {
+  background-color: #f8f9fa;
+}
+
+/* Make accordion items look like the image */
+.accordion-button {
+  margin-bottom:4px;
+  color: #333;
+  font-weight: 500;
+}
+
+.accordion-button:focus {
+  box-shadow: none;
+  border-color: rgba(0,0,0,.125);
+}
+
+.accordion-button:not(.collapsed) {
+  color: #000;
+  background-color: #f8d7d4;
+}
+
+.accordion-button.collapsed {
+  background-color: #ffded9;
+}
+
+.accordion-button::after {
+  margin-left: auto;
+}
+
+/* Contact form styles */
+.card {
+  border-radius: 5px;
+}
+
+
+
+.form-control {
+  
+  border-radius: 1px;
+  border: 1px solid #ced4da;
+}
+
+.form-control:focus {
+  box-shadow: none;
+  border-color: #ff6347;
+}
+
+.btn-danger {
+  background-color: #ff5733;
+  border: none;
+  padding: 8px 16px;
+}
+

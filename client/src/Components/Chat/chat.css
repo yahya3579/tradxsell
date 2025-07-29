@@ -1,0 +1,156 @@
+.list-group-item {
+  border: none;
+}
+
+.list-group-item:hover {
+  background-color: #FB5420;
+  cursor: pointer;
+}
+.selected-contact {
+  background-color: #FB5420 !important; /* Bootstrap primary */
+  color: white;
+  border-radius: 8px;
+}
+.search-input {
+  font-size: 0.8rem;
+  border: none;
+  background-color: #eef;
+}
+.search-input:focus {
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background-color: rgb(255, 255, 255);
+}
+.userName-text {
+  font-size: 0.8rem;
+}
+.userrecent-text {
+  font-size: 0.7rem;
+  color: rgb(100, 100, 100);
+}
+.time-text {
+  font-size: 0.8rem;
+}
+.contact-list-container {
+  max-height: 64vh;
+  overflow-y: auto;
+  scrollbar-width: thin;            /* Firefox */
+  scrollbar-color: #ccc transparent; /* Firefox */
+}
+
+/* WebKit Scrollbar Styling */
+.contact-list-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.contact-list-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.contact-list-container::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 4px;
+}
+
+.contact-list-container::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
+}
+.chat-window-div{
+    background-color: rgb(238, 234, 234);
+    height: 90vh;
+   
+}
+.sender-msg-text{
+    background-color: #ec5b2c;
+}
+.message-input{
+  background-color: #292D32;
+    outline: none;
+    color: white;
+    border-radius: 10px;
+    box-shadow: none;
+}
+.message-input::placeholder {
+  color: white;
+  opacity: 0.7; /* Optional, for a slightly faded placeholder look */
+}
+.message-input:focus{
+    outline: none;
+    background-color: #292D32;
+    color: white;
+    border: none;
+    box-shadow: none;
+}
+.submit-message-btn{
+    background-color: #ec5b2c;
+    border: none;
+}
+.white-icon {
+  filter: brightness(0) invert(1);
+}
+
+.submit-message-btn:hover{
+    background-color: #e0643b;
+    border: none;
+}
+.upper-user-container{
+    padding: 1rem;
+    border-radius: 10px 10px 0px 0px ;
+    padding-left: 2rem;
+    z-index: 200;
+    background-color: #FB5420;
+}
+/* ChatComponent.css */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 6px solid rgba(0, 0, 0, 0.1);
+  border-top: 6px solid #ec5b2c;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-container p {
+  margin-top: 10px;
+  font-size: 1.2rem;
+  color: #ec5b2c;
+}
+/* in your CSS file */
+.sidebar-container {
+  width: 280px;
+  background-color: white;
+  height: 100%;
+}
+
+@media (max-width: 767.98px) {
+  .sidebar-container {
+    position: absolute;
+    z-index: 1000;
+  }
+}
+
+@media (min-width: 768px) {
+  .sidebar-container {
+    position: relative;
+    z-index: auto;
+  }
+}
+

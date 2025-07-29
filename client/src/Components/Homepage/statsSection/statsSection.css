@@ -1,0 +1,42 @@
+.stat-card {
+    border: 1px solid #efefef; /* Light border */
+    border-radius: 10px; /* Rounded corners */
+    padding: 20px; /* Padding for spacing */
+    background-color: #D9D9D9; /* Light background */
+    transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+.stat-card:hover {
+    background-color: #ef5b2d; /* Change background on hover */
+    color: white; /* Change text color on hover */
+}
+
+h3 {
+    font-size: 2rem; /* Font size for numbers */
+    margin: 0; /* Remove default margin */
+}
+
+p {
+    font-size: 1rem; /* Font size for labels */
+    margin: 0; /* Remove default margin */
+}
+
+.margin-setting{
+    margin: 4rem auto;
+}
+
+/* Responsive design */
+@media (max-width: 576px) {
+    h3 {
+        font-size: 1.5rem; /* Smaller font size on mobile */
+    }
+    p {
+        font-size: 0.875rem; /* Smaller font size on mobile */
+    }
+}
+
+@media (min-width: 993px) {
+    .margin-setting{
+        margin: 6rem auto 4rem;
+    }
+  }

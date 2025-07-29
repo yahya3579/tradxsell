@@ -1,0 +1,86 @@
+   .feedbackContainer {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    max-width: 800px;
+    margin: 20px auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .heading {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+    color: #333;
+  }
+  
+  .feedbackList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+  
+  .feedbackCard {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    max-width: 300px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .feedbackHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .productImage {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .productName {
+    margin: 0;
+    font-weight: bold;
+    color: #333;
+    font-size: 1rem;
+  }
+  
+  .username {
+    font-size: 0.9rem;
+    color: #555;
+  }
+  
+  .feedbackBody {
+    margin-top: 10px;
+  }
+  
+  .reviewText {
+    font-style: italic;
+    color: #444;
+    margin: 0;
+  }
+  
+  .userEmail {
+    font-size: 0.8rem;
+    color: #777;
+    margin-top: 5px;
+  }
+  
+  .noFeedback {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+  }
+  
+  .ProductUsername a{
+    text-decoration: none;
+  }

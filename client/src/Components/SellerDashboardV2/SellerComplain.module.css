@@ -1,0 +1,120 @@
+/* SellerComplain.module.css */
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.contentMain {
+    flex: 1;
+    padding: 20px;
+}
+
+.content {
+    flex: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.title {
+    color: #EF5D28;
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+}
+
+.form {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.textarea {
+    width: 100%;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #f7f7f7;
+    color: #1E1E1E;
+    border: 1px solid #333;
+    border-radius: 4px;
+    resize: vertical;
+}
+
+.button {
+    padding: 0.5rem 1rem;
+    background-color: #EF5D28;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.message {
+    margin-top: 1rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    color: #ef5d28;
+    font-weight: 500;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #cfcfcf;
+    padding-bottom: 10px;
+}
+
+.headerTitle {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.headerUser {
+    display: flex;
+    align-items: center;
+}
+
+.userName {
+    margin-right: 10px;
+    font-size: 1rem;
+}
+
+.userAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #EF5B2B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: rgb(224, 224, 224);
+}
+
+.ComplainBox{
+    background-color: #cfd7c5b8;
+    padding: 2rem;
+    border-radius: 1rem;
+    min-width: 550px;
+}
+
+@media (max-width: 991px) {
+    .container {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 600px) {
+    .ComplainBox{
+        min-width: 100%;
+    }
+    .content {
+        padding: 2rem 0;
+    }
+}

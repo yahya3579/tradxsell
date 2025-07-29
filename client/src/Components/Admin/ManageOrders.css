@@ -1,0 +1,12 @@
+.ManageOrder{
+    color: rgb(224, 224, 224);
+    display: flex;
+    background-color: rgb(18, 18, 18);
+    min-height: 100vh;
+}
+
+@media(max-width: 991px){
+    .ManageOrder{
+        flex-direction:column;
+    }
+}
