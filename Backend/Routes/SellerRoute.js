@@ -37,6 +37,11 @@ router.post('/profile', upload.single('logo'), async (req, res) => {
       cnicDocs     // Same as above
     } = req.body;
 
+    // Validation: companyName is required
+    if (!companyName || companyName.trim() === "") {
+      return res.status(400).json({ error: 'Company name is required' });
+    }
+
     // Upload logo to Cloudinary if present
     let profileImageUrl;
     if (req.file) {
@@ -378,6 +383,10 @@ router.get('/public-profile', async (req, res) => {
     if (!sellerInfo) {
       const oldProfile = await SellerProfile.findOne({ user: user._id });
       if (oldProfile) {
+        // Only show if isPublic is true
+        if (!oldProfile.isPublic) {
+          return res.status(404).json({ error: 'Public seller profile not found' });
+        }
         // Map old profile to new format for backward compatibility
         sellerInfo = {
           companyName: oldProfile.companyName,
@@ -398,8 +407,18 @@ router.get('/public-profile', async (req, res) => {
             format: 'jpg', // Default
             size: 0
           } : null,
-          profileStatus: { isPublic: true }
+          profileStatus: { isPublic: true },
+          tags: oldProfile.tags || []
         };
+      }
+    } else {
+      // If using SellerInfo, try to include tags from SellerProfile if available
+      const oldProfile = await SellerProfile.findOne({ user: user._id });
+      sellerInfo = sellerInfo.toObject();
+      sellerInfo.tags = oldProfile && oldProfile.tags ? oldProfile.tags : [];
+      // Only show if isPublic is true in SellerProfile
+      if (!oldProfile || !oldProfile.isPublic) {
+        return res.status(404).json({ error: 'Public seller profile not found' });
       }
     }
 
@@ -606,6 +625,37 @@ router.post('/validate-image', upload.single('image'), async (req, res) => {
   } catch (error) {
     console.error('Error validating image:', error);
     res.status(500).json({ error: 'Failed to validate image' });
+  }
+});
+
+// Admin: Update seller tags and role
+router.put('/admin/update-tags-role', async (req, res) => {
+  try {
+    const { userId, tags, role } = req.body;
+    if (!userId) return res.status(400).json({ error: 'User ID is required' });
+
+    // Only set isPublic: true if tags is a non-empty array
+    const updateFields = { tags };
+    if (Array.isArray(tags) && tags.length > 0) {
+      updateFields.isPublic = true;
+    }
+
+    // Update SellerProfile tags and isPublic
+    const seller = await SellerProfile.findOneAndUpdate(
+      { user: userId },
+      { $set: updateFields },
+      { new: true }
+    );
+
+    // Update User role if provided
+    if (role) {
+      await User.findByIdAndUpdate(userId, { $set: { role } });
+    }
+
+    res.json({ message: 'Tags and role updated', seller });
+  } catch (error) {
+    console.error('Error updating tags/role:', error);
+    res.status(500).json({ error: 'Failed to update tags/role' });
   }
 });
 

@@ -1,624 +1,3 @@
-// import { React, useState, useContext, useEffect } from "react";
-// import FullNavbar from "./FullNavbar";
-// import axios from "axios";
-// import { Link } from "react-router-dom";
-// import "./SellerDashboardV2.css";
-// import { AuthContext } from "../../AuthContext.js";
-// import {
-//   CategoryScale,
-//   Chart as ChartJS,
-//   Legend,
-//   LinearScale,
-//   LineController,
-//   LineElement,
-//   BarElement,
-//   PointElement,
-//   Title,
-//   Tooltip,
-// } from "chart.js";
-// import { Line, Bar } from "react-chartjs-2";
-// ChartJS.register(
-//   CategoryScale,
-//   LinearScale,
-//   LineElement,
-//   PointElement,
-//   LineController,
-//   BarElement,
-//   Title,
-//   Tooltip,
-//   Legend
-// );
-
-// export default function SellerDashboardV2() {
-//   // states
-//   const [totalProducts, setTotalProducts] = useState(0);
-//   const { email: sellerEmail, username: sellerusername } =
-//     useContext(AuthContext);
-//   const [recentReviews, setRecentReviews] = useState([]);
-//   const [totalOrders, setTotalOrders] = useState(0);
-//   const [totalReviews, setTotalReviews] = useState(0);
-//   const [products, setProducts] = useState([]);
-//   const [combinedData, setCombinedData] = useState([]);
-//   const [productsInventory, setproductsInventory] = useState([]); // for inventry management 
-//   const [scrollSalesOpen, setScrollSalesOpen] = useState(false);
-//   const [scrollOrderOpen, setScrollOrderOpen] = useState(false);
-//   const [scrollProductOpen, setScrollProductOpen] = useState(false);
-//   const [scrollInventryOpen, setScrollInventryOpen] = useState(false);
-//   const [scrollAccountHealtOpen, setScrollAccountHealtOpen] = useState(false);
-//   const [scrollFeedbackOpen, setScrollFeedbackOpen] = useState(false);
-//   const [scrollStroesOpen, setScrollStroesOpen] = useState(false);
-//   const [scrollMessagesOpen, setScrollMessagesOpen] = useState(false);
-
-//   const [dailyOrders, setDailyOrders] = useState(new Array(31).fill(0));
-
-//   const toggleSalesDropdown = () => {
-//     setScrollSalesOpen(!scrollSalesOpen);
-//   };
-//   const toggleOrderDropdown = () => {
-//     setScrollOrderOpen(!scrollOrderOpen);
-//   };
-//   const toggleProductDropdown = () => {
-//     setScrollProductOpen(!scrollProductOpen);
-//   };
-//   const toggleInventryDropdown = () => {
-//     setScrollInventryOpen(!scrollInventryOpen);
-//   };
-//   const toggleAccountHealthDropdown = () => {
-//     setScrollAccountHealtOpen(!scrollAccountHealtOpen);
-//   };
-//   const toggleFeedbackDropdown = () => {
-//     setScrollFeedbackOpen(!scrollFeedbackOpen);
-//   };
-//   const toggleStoresDropdown = () => {
-//     setScrollStroesOpen(!scrollStroesOpen);
-//   };
-//   const toggleMessagesDropdown = () => {
-//     setScrollMessagesOpen(!scrollMessagesOpen);
-//   };
-
-//   const lineData = {
-//     labels: Array.from({ length: 31 }, (_, i) => i + 1),
-//     datasets: [
-//       {
-//         label: "Number of Orders",
-//         data: dailyOrders,
-//         fill: false,
-//         borderColor: "#EF5B2B",
-//         backgroundColor: "rgba(76, 175, 80, 0.1)",
-//         tension: 0.1,
-//       },
-//     ],
-//   };
-
-//   const lineOptions = {
-//     responsive: true,
-//     maintainAspectRatio: false,
-//     scales: {
-//       y: {
-//         beginAtZero: true,
-//         min: 0,
-//         max: Math.max(...dailyOrders) + 1,
-//         ticks: {
-//           color: "#E0E0E0",
-//         },
-//         grid: {
-//           color: "rgba(255, 255, 255, 0.1)",
-//         },
-//       },
-//     },
-//   };
-
-//   useEffect(() => {
-//     // Fetch product details for each productId in recentReviews
-//     const fetchProducts = async () => {
-//       try {
-//         const productRequests = recentReviews.map((review) =>
-//           axios.get(
-//             `${process.env.REACT_APP_LOCALHOST_URL}/products/product/${review.productId}`
-//           )
-//         );
-
-//         const productResponses = await Promise.all(productRequests);
-
-//         // Extract product data from responses
-//         const productData = productResponses.map((response) => response.data);
-
-//         setProducts(productData);
-//       } catch (error) {
-//         console.error("Error fetching product details:", error);
-//       }
-//     };
-
-//     fetchProducts();
-//   }, [recentReviews]);
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         const productResponse = await fetch(
-//           `${process.env.REACT_APP_LOCALHOST_URL}/seller/total-products/${sellerEmail}`
-//         );
-//         const orderResponse = await fetch(
-//           `${process.env.REACT_APP_LOCALHOST_URL}/seller/total-orders/${sellerEmail}`
-//         );
-//         const reviewResponse = await fetch(
-//           `${process.env.REACT_APP_LOCALHOST_URL}/seller/total-reviews/${sellerEmail}`
-//         );
-//         const recentReviewsResponse = await fetch(
-//           `${process.env.REACT_APP_LOCALHOST_URL}/seller/recent-reviews/${sellerEmail}`
-//         );
-//         const dailyOrdersResponse = await fetch(
-//           `${process.env.REACT_APP_LOCALHOST_URL}/seller/daily-orders/${sellerEmail}`
-//         );
-
-//         const productData = await productResponse.json();
-//         const orderData = await orderResponse.json();
-//         const reviewData = await reviewResponse.json();
-//         const dailyOrdersData = await dailyOrdersResponse.json();
-//         const recentReviewsData = await recentReviewsResponse.json();
-
-//         setTotalProducts(productData.totalProducts);
-//         setTotalOrders(orderData.totalOrders);  
-//         setTotalReviews(reviewData.totalReviews);
-//         setRecentReviews(
-//           Array.isArray(recentReviewsData) ? recentReviewsData : []
-//         );
-//         setDailyOrders(dailyOrdersData);
-//       } catch (error) {
-//         console.error("Error fetching seller data:", error);
-//       }
-//     };
-
-//     fetchData();
-//   }, [sellerEmail, sellerusername]);
-//   useEffect(() => {
-//     if (recentReviews.length > 0 && products.length > 0) {
-//       const combined = recentReviews
-//         .map((review) => {
-//           const matchingProduct = products.find(
-//             (product) => product.id.toString() === review.productId.toString()
-//           );
-//           if (matchingProduct) {
-//             return {
-//               ...review,
-//               product: matchingProduct,
-//             };
-//           }
-//           return null;
-//         })
-//         .filter((item) => item !== null);
-
-//       setCombinedData(combined);
-//     }
-//   }, [recentReviews, products]);
-
-//   useEffect(() => {
-//     const fetchProducts = async () => {
-//       try {
-//         // const response = await axios.get(`/api/seller/${sellerEmail}`); 
-//         const response = await axios.get(`${process.env.REACT_APP_LOCALHOST_URL}/products/seller/${sellerEmail}`); 
-//         setproductsInventory(response.data); // Store the fetched products in state
-//       } catch (err) {
-//         console.error("Error fetching products:", err);
-//       }
-//     };
-
-//     if (sellerEmail) {
-//       fetchProducts();
-//     }
-//   }, [sellerEmail])
-  
-
-//   const data = {
-//     labels: ["Total Products"],
-//     datasets: [
-//       {
-//         label: "Number of Products",
-//         data: [totalProducts],
-//         backgroundColor: "#4CAF50", // Bar color
-//         borderColor: "#388E3C",
-//         borderWidth: 1,
-//       },
-//     ],
-//   };
-
-//   const options = {
-//     responsive: true,
-//     maintainAspectRatio: false,
-//     scales: {
-//       y: {
-//         beginAtZero: true, // Start y-axis from 0
-//         ticks: {
-//           color: "#E0E0E0",
-//         },
-//         grid: {
-//           color: "rgba(255, 255, 255, 0.1)",
-//         },
-//       },
-//     },
-//     plugins: {
-//       tooltip: {
-//         callbacks: {
-//           label: (context) => `Total Products: ${context.raw}`, // Custom tooltip text
-//         },
-//       },
-//     },
-//   };
-
-//   const totalQuantity = productsInventory.reduce((total, product) => {
-//     return total + product.quantity; // Accumulate the quantity
-//   }, 0);
-  
-//   const statusData = productsInventory.reduce((acc, product) => {
-//     const { status, quantity } = product;
-//     // Initialize if not already present
-//     if (!acc[status]) {
-//       acc[status] = { count: 0, totalQuantity: 0 };
-//     }
-//     // Increment count and add to quantity
-//     acc[status].count += 1;
-//     acc[status].totalQuantity += quantity;
-    
-//     return acc;
-//   }, {});
-
-
-//   return (
-//     <>
-//       <div className="container-fluid m-0 p-0 navbar-dark bg-dark shadow">
-//         <FullNavbar />
-//       </div>
-//       {/* // Dashboard section  */}
-//       <section className="container">
-//         <div>
-//           <div className="container mt-4">
-//             <div className="row align-items-center">
-//               {/* Left-side text */}
-//               <div className="col">
-//                 <h6 className="mb-0">Matrices</h6>
-//               </div>
-
-//               {/* Right-side buttons */}
-//               <div className="col-auto d-flex justify-content-end gap-2">
-//               <Link to='/admin/sellerdashboard/accountsettings' className="btn btn-outline-secondary btn-sm outline-buttons">
-//                   Account Settings
-//                 </Link>
-//                 <Link to='/admin/sellerdashboard/complains' className="btn btn-outline-secondary btn-sm outline-buttons">
-//                   Complain
-//                 </Link>
-//                 <Link to='/admin/sellerdashboard/feedbacks' className="btn btn-outline-secondary btn-sm outline-buttons">
-//                   Customer Feedback
-//                 </Link>
-//               </div>
-//             </div>
-//           </div>
-
-//           <div className="container p-3">
-//             <div className="row">
-//               {/* Left side: Card 1 and Card 4 stacked vertically, each covering 2 columns and 2 rows */}
-//               <div className="col-md-6 d-flex flex-column">
-//                 <div className="card card-custom mb-4 h-100 ">
-//                   <div className="card-body card-body-custom position-relative text-black">
-//                     {/* Title at the top-left */}
-//                     <h5 className="card-title card-title-custom">Products</h5>
-
-//                     <span
-//                       className="position-absolute top-0 end-0 custom-arrow-icon mt-2 me-3"
-//                       onClick={toggleProductDropdown}
-//                     >
-//                       <i className="fas fa-chevron-down"></i>
-//                     </span>
-//                     {scrollProductOpen && (
-//                       <div
-//                         className="dropdown-menu show position-absolute p-1"
-//                         style={{ top: "2rem", right: "1rem" }}
-//                       >
-//                         <Link
-//                           className="dropdown-item"
-//                           to="/admin/sellerdashboard/addproduct"
-//                         >
-//                           View Products Dashboard
-//                         </Link>
-//                       </div>
-//                     )}
-//                     <p className="card-text  card-text-value">
-//                       {totalProducts}
-//                     </p>
-//                     <p className="card-text  card-text-custom">
-//                       Total Products
-//                     </p>
-//                     <div className="chart-wrapper">
-//                       <Bar data={data} options={options} />
-//                     </div>
-//                   </div>
-//                 </div>
-//                 <div className="card card-custom mb-4 h-100">
-//                   <div className="card-body card-body-custom position-relative">
-//                     {/* Title at the top-left */}
-//                     <h5 className="card-title card-title-custom">
-//                       Open Orders
-//                     </h5>
-
-//                     {/* Arrow down icon at the top-right */}
-//                     <span
-//                       className="position-absolute top-0 end-0 custom-arrow-icon mt-2 me-3"
-//                       onClick={toggleOrderDropdown}
-//                     >
-//                       <i className="fas fa-chevron-down"></i>
-//                     </span>
-//                     {scrollOrderOpen && (
-//                       <div
-//                         className="dropdown-menu show position-absolute p-1"
-//                         style={{ top: "2rem", right: "1rem" }}
-//                       >
-//                         <Link className="dropdown-item" to="/admin/sellerdashboard/orders">
-//                           View Orders Dashboard
-//                         </Link>
-//                       </div>
-//                     )}
-
-//                     <p className="card-text  card-text-value">{totalOrders}</p>
-//                     <p className="card-text  card-text-custom">Total Count</p>
-//                     <div className="chart-wrapper">
-//                       <Line data={lineData} options={lineOptions} />
-//                     </div>
-//                   </div>
-//                 </div>
-//               </div>
-
-//               {/* Right side: Smaller cards in a 2x2 grid */}
-//               <div className="col-md-6">
-//                 <div className="row">
-//                   <div className="col-lg-4 mt-1  col-12 mb-3">
-//                     <div className="card card-custom  h-100">
-//                       <div className="card-body card-body-custom position-relative">
-//                         {/* Title at the top-left */}
-//                         <h5 className="card-title card-title-custom">Sales</h5>
-
-//                         {/* Arrow down icon at the top-right */}
-//                         <span
-//                           className="position-absolute top-0 end-0 custom-arrow-icon mt-2 me-3"
-//                           onClick={toggleSalesDropdown}
-//                         >
-//                           <i className="fas fa-chevron-down"></i>
-//                         </span>
-//                         {scrollSalesOpen && (
-//                           <div
-//                             className="dropdown-menu show position-absolute p-1"
-//                             style={{ top: "2rem", right: "1rem" }}
-//                           >
-//                             <Link
-//                               className="dropdown-item"
-//                               to="/admin/sellerdashboard/salesdashboard"
-//                             >
-//                               View Sales Dashboard
-//                             </Link>
-//                           </div>
-//                         )}
-//                         <p className="card-text  card-text-value">
-//                           {totalProducts}
-//                         </p>
-//                         <p className="card-text  card-text-custom">
-//                           Total Sales
-//                         </p>
-//                         {/* <p className="card-text  card-text-value">8</p>
-//                         <p className="card-text  card-text-custom">
-//                           Approved Products
-//                         </p>
-//                         <p className="card-text  card-text-value">4</p>
-//                         <p className="card-text  card-text-custom">
-//                           Pending Products
-//                         </p>
-//                         <p className="card-text  card-text-value">2</p>
-//                         <p className="card-text  card-text-custom">
-//                           Declined Products
-//                         </p> */}
-//                       </div>
-//                     </div>
-//                   </div>
-//                   <div className="col-lg-4 mt-1  col-12 mb-3">
-//                     <div className="card card-custom h-100">
-//                       <div className="card-body card-body-custom position-relative">
-//                         {/* Title at the top-left */}
-//                         <h5 className="card-title card-title-custom">
-//                           Inventry Management
-//                         </h5>
-
-//                         {/* Arrow down icon at the top-right */}
-//                         <span
-//                           className="position-absolute top-0 end-0 custom-arrow-icon mt-2 me-3 "
-//                           onClick={toggleInventryDropdown}
-//                         >
-//                           <i className="fas fa-chevron-down"></i>
-//                         </span>
-//                         {scrollInventryOpen && (
-//                           <div
-//                             className="dropdown-menu show position-absolute p-1"
-//                             style={{ top: "2rem", right: "1rem" }}
-//                           >
-//                             <Link className="dropdown-item" to='/admin/sellerdashboard/inventory'>
-//                               View inventry Dashboard
-//                             </Link>
-//                           </div>
-//                         )}
-
-//                         <p className="card-text  card-text-value">{totalQuantity ? totalQuantity : 0}</p>
-//                         <p className="card-text  card-text-custom">In Stock</p>
-//                         <p className="card-text  card-text-value">{statusData?.pending?.totalQuantity}</p>
-//                         <p className="card-text  card-text-custom">
-//                           In Pending
-//                         </p>
-//                         <p className="card-text  card-text-value">{statusData?.approved?.totalQuantity}</p>
-//                         <p className="card-text  card-text-custom">Approved</p>
-//                       </div>
-//                     </div>
-//                   </div>
-//                   <div className="col-lg-4 mt-1  col-12 mb-3">
-//                     <div className="card card-custom  h-100">
-//                       <div className="card-body card-body-custom position-relative">
-//                         {/* Title at the top-left */}
-//                         <h5 className="card-title card-title-custom">
-//                           Account Health
-//                         </h5>
-
-//                         {/* Arrow down icon at the top-right */}
-//                         <span
-//                           className="position-absolute top-0 end-0 custom-arrow-icon mt-2 me-3"
-//                           onClick={toggleAccountHealthDropdown}
-//                         >
-//                           <i className="fas fa-chevron-down"></i>
-//                         </span>
-//                         {scrollAccountHealtOpen && (
-//                           <div
-//                             className="dropdown-menu show position-absolute p-1"
-//                             style={{ top: "2rem", right: "1rem" }}
-//                           >
-//                             <a className="dropdown-item" href="#link">
-//                               View Account Dashboard
-//                             </a>
-//                           </div>
-//                         )}
-
-//                         <p className="card-text  card-text-value">Good</p>
-//                         <p className="card-text  card-text-custom">
-//                           Today so far
-//                         </p>
-//                       </div>
-//                     </div>
-//                   </div>
-//                 </div>
-
-//                 <div className="row mt-2">
-//                   <div className="col-lg-4 mt-1  col-12">
-//                     <div className="card card-custom  h-100">
-//                       <div className="card-body card-body-custom position-relative">
-//                         {/* Title at the top-left */}
-//                         <h5 className="card-title card-title-custom">
-//                           Customer Feedback
-//                         </h5>
-
-//                         {/* Arrow down icon at the top-right */}
-//                         <span
-//                           className="position-absolute top-0 end-0 custom-arrow-icon mt-2 me-3"
-//                           onClick={toggleFeedbackDropdown}
-//                         >
-//                           <i className="fas fa-chevron-down"></i>
-//                         </span>
-//                         {scrollFeedbackOpen && (
-//                           <div
-//                             className="dropdown-menu show position-absolute p-1"
-//                             style={{ top: "2rem", right: "1rem" }}
-//                           >
-//                             <Link className="dropdown-item" to="/admin/sellerdashboard/feedbacks">
-//                               View Feedback Dashboard
-//                             </Link>
-//                           </div>
-//                         )}
-
-//                         <p className="card-text  card-text-value">
-//                           {totalReviews}
-//                         </p>
-//                         <p className="card-text  card-text-custom">
-//                           Past month
-//                         </p>
-
-//                         {combinedData.length === 0 ? (
-//                           <p>No recent reviews.</p>
-//                         ) : (
-//                           combinedData.slice(0, 2).map((review) => (
-//                             <div key={review._id} className="review-item">
-//                               <div className="d-flex align-items-center">
-//                                 <img
-//                                   src={`${process.env.REACT_APP_LOCALHOST_URL}${review?.product?.imageUrl}`}
-//                                   className="img-fluid"
-//                                   style={{
-//                                     width: "20px",
-//                                     height: "20px",
-//                                     objectFit: "cover",
-//                                     borderRadius: "50%",
-//                                     marginRight: "10px",
-//                                   }}
-//                                   alt={review?.product?.name}
-//                                 />
-//                                 <div className="d-flex flex-column">
-//                                   <p
-//                                     className="text-muted"
-//                                     style={{ fontSize: "0.5rem" }}
-//                                   >
-//                                     {review?.product?.name}
-//                                   </p>
-//                                   <strong className="review-username">
-//                                     {review.username}
-//                                   </strong>
-//                                   <p className="review-text small">
-//                                     {review.review}
-//                                   </p>
-//                                 </div>
-//                               </div>
-//                             </div>
-//                           ))
-//                         )}
-//                       </div>
-//                     </div>
-//                   </div>
-//                   <div className="col-lg-4 mt-1  col-12">
-//                     <div className="card card-custom  h-100">
-//                       <div className="card-body card-body-custom position-relative">
-//                         {/* Title at the top-left */}
-//                         <h5 className="card-title card-title-custom">Stores</h5>
-
-//                         {/* Arrow down icon at the top-right */}
-//                         <span
-//                           className="position-absolute top-0 end-0 custom-arrow-icon mt-2 me-3"
-//                           onClick={toggleStoresDropdown}
-//                         >
-//                           <i className="fas fa-chevron-down"></i>
-//                         </span>
-//                         {scrollStroesOpen && (
-//                           <div
-//                             className="dropdown-menu show position-absolute p-1"
-//                             style={{ top: "2rem", right: "1rem" }}
-//                           >
-//                             <a className="dropdown-item" href="#link">
-//                               View Store Dashboard
-//                             </a>
-//                           </div>
-//                         )}
-
-//                         <p className="card-text  card-text-value">1</p>
-//                         <p className="card-text  card-text-custom">
-//                           Total Store
-//                         </p>
-//                       </div>
-//                     </div>
-//                   </div>
-//                   <div className="col-lg-4 mt-1  col-12">
-//                     <Link to="/chat" >
-//                     <div className="card card-custom  h-100">
-//                       <div className="card-body card-body-custom position-relative">
-//                         {/* Title at the top-left */}
-//                         <h5 className="card-title card-title-custom">
-//                           Buyer Messages
-//                         </h5>
-//                         <p className="card-text  card-text-value">Chat System</p>
-//                       </div>
-//                     </div>
-//                     </Link>
-                    
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </section>
-//     </>
-//   );
-// }
-
-
-
-
 
 import { React, useState, useContext, useEffect } from "react";
 import FullNavbar from "./FullNavbar";
@@ -639,6 +18,7 @@ import {
   Tooltip,
 } from "chart.js";
 import { Line, Bar } from "react-chartjs-2";
+import { Badge } from "react-bootstrap";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -654,7 +34,7 @@ ChartJS.register(
 export default function SellerDashboardV2() {
   // States
   const [totalProducts, setTotalProducts] = useState(0);
-  const { email: sellerEmail, username: sellerusername } =
+  const { id: userId, email: sellerEmail, username: sellerusername } =
     useContext(AuthContext);
   const [recentReviews, setRecentReviews] = useState([]);
   const [totalOrders, setTotalOrders] = useState(0);
@@ -672,6 +52,7 @@ export default function SellerDashboardV2() {
   const [scrollMessagesOpen, setScrollMessagesOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [tags, setTags] = useState([]);
 
   const [dailyOrders, setDailyOrders] = useState(new Array(31).fill(0));
 
@@ -1013,6 +394,17 @@ export default function SellerDashboardV2() {
       fetchProducts();
     }
   }, [sellerEmail]);
+
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`http://localhost:3001/seller/profile?userId=${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.seller) {
+          setTags(data.seller.tags || []);
+        }
+      });
+  }, [userId]);
   
   const data = {
     labels: ["Total Products"],
@@ -1100,6 +492,47 @@ export default function SellerDashboardV2() {
     <>
       <div className="container-fluid m-0 p-0 navbar-dark bg-dark shadow">
         <FullNavbar />
+      </div>
+      {/* Welcome Section with Real Tag Badge */}
+      <div className="container mt-4 mb-3">
+        <div className="d-flex align-items-center" style={{ gap: 12 }}>
+          <h1 style={{ margin: 0, fontWeight: 700 }}>
+            Welcome back, <span style={{ color: '#EF5B2B' }}>{sellerusername || 'Seller'}</span>!
+          </h1>
+          {tags.length > 0 && (
+            <span style={{ display: "inline-flex", gap: 6 }}>
+              {tags.map((tag) => (
+                <Badge
+                  key={tag}
+                  bg={
+                    tag === "registered" ? "secondary" :
+                    tag === "verified" ? "info" :
+                    tag === "gold" ? "warning" : "dark"
+                  }
+                  style={{
+                    fontSize: "1rem",
+                    borderRadius: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0.35em 0.8em"
+                  }}
+                >
+                  {tag === "verified" ? (
+                    <>
+                      <span style={{ marginRight: 4, fontWeight: 700 }}>✔</span>
+                      Verified
+                    </>
+                  ) : (
+                    tag.charAt(0).toUpperCase() + tag.slice(1)
+                  )}
+                </Badge>
+              ))}
+            </span>
+          )}
+        </div>
+        <div style={{ color: '#888', fontSize: '1.1rem', marginTop: 4 }}>
+          Here's Your Current Sales Overview
+        </div>
       </div>
       
       {/* Show error message if exists */}

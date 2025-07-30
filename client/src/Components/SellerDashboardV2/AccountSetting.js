@@ -5,6 +5,7 @@ import FullNavbar from "./FullNavbar";
 import styles from "./AccountSetting.module.css";
 import { X, Camera } from "lucide-react";
 import { AuthContext } from "../../AuthContext";
+import { Badge } from "react-bootstrap";
 
 export default function AccountSetting() {
   const { id: userId } = useContext(AuthContext);
@@ -26,6 +27,7 @@ export default function AccountSetting() {
   const [idCardImages, setIdCardImages] = useState([]);
   const [idCardFiles, setIdCardFiles] = useState([]);
   const [modalFile, setModalFile] = useState(null);
+  const [tags, setTags] = useState([]);
   const maxLegalDocs = 5;
   const maxIdCards = 2;
 
@@ -48,7 +50,7 @@ export default function AccountSetting() {
           setInstagram(data.seller.socialLinks?.instagram || "");
           setLinkedin(data.seller.socialLinks?.linkedin || "");
           if (data.seller.profileImageUrl) setLogoPreview(data.seller.profileImageUrl);
-          // Optionally, set legalDocs/cnicDocs previews if you want
+          setTags(data.seller.tags || []);
         }
       });
   }, [userId]);
@@ -159,7 +161,7 @@ export default function AccountSetting() {
         <div className={styles.settingsContainer}>
           <div className={`${styles.card} shadow-lg`}>
             <div className={styles.header}>
-              <div className={styles.logoWrapper}>
+              <div className={styles.logoWrapper} style={{ position: "relative", display: "inline-block" }}>
                 <img
                   src={
                     logoPreview ||
@@ -168,6 +170,7 @@ export default function AccountSetting() {
                   alt="Logo"
                   className={styles.logo}
                 />
+                {/* Camera upload button here */}
                 <div className={styles.fileUploadWrapper}>
                   <input
                     type="file"
@@ -184,6 +187,45 @@ export default function AccountSetting() {
                     <Camera size={22} strokeWidth={2.2} />
                   </label>
                 </div>
+                {/* BADGES: */}
+                {tags.length > 0 && (
+                  <div style={{
+                    position: "absolute",
+                    left: "100%",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    marginLeft: "10px",
+                    display: "flex",
+                    gap: "6px"
+                  }}>
+                    {tags.map((tag) => (
+                      <Badge
+                        key={tag}
+                        bg={
+                          tag === "registered" ? "secondary" :
+                          tag === "verified" ? "info" :
+                          tag === "gold" ? "warning" : "dark"
+                        }
+                        style={{
+                          fontSize: "0.95rem",
+                          borderRadius: "12px",
+                          display: "flex",
+                          alignItems: "center",
+                          padding: "0.35em 0.8em"
+                        }}
+                      >
+                        {tag === "verified" ? (
+                          <>
+                            <span style={{ marginRight: 4, fontWeight: 700 }}>✔</span>
+                            Verified
+                          </>
+                        ) : (
+                          tag.charAt(0).toUpperCase() + tag.slice(1)
+                        )}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
               <h2 className={styles.title}>Seller Account Settings</h2>
             </div>

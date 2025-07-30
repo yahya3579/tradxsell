@@ -170,6 +170,58 @@ const SellerPublicProfile = () => {
             <div className="seller-name-section">
               <h1 className="seller-company-name">
                 {seller.companyName}
+                {/* Tag Badges */}
+                {seller.tags && seller.tags.length > 0 && (
+                  <span style={{ marginLeft: 12, display: "inline-flex", gap: 6 }}>
+                    {seller.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className={`seller-tag-badge ${tag}`}
+                        style={{
+                          background:
+                            tag === "gold"
+                              ? "linear-gradient(135deg, #ffd700 0%, #ffb347 100%)"
+                              : tag === "verified"
+                              ? "#e8f5e8"
+                              : "#e3f2fd",
+                          color:
+                            tag === "gold"
+                              ? "#b8860b"
+                              : tag === "verified"
+                              ? "#2e7d32"
+                              : "#1976d2",
+                          border:
+                            tag === "gold"
+                              ? "1px solid #daa520"
+                              : tag === "verified"
+                              ? "1px solid #c8e6c9"
+                              : "1px solid #bbdefb",
+                          borderRadius: "12px",
+                          fontWeight: "600",
+                          fontSize: "1rem",
+                          padding: "0.35em 0.8em",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        {tag === "verified" ? (
+                          <>
+                            <MdVerified style={{ marginRight: 4 }} />
+                            Verified
+                          </>
+                        ) : tag === "gold" ? (
+                          <>
+                            <MdStar style={{ marginRight: 4 }} />
+                            Gold
+                          </>
+                        ) : (
+                          tag.charAt(0).toUpperCase() + tag.slice(1)
+                        )}
+                      </span>
+                    ))}
+                  </span>
+                )}
+                {/* End Tag Badges */}
                 {seller.profileStatus?.isVerified && (
                   <MdVerified className="verified-icon" />
                 )}

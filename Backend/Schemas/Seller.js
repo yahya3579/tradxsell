@@ -60,6 +60,7 @@ const sellerSchema = new mongoose.Schema(
     storeSlug: {
       type: String,
       unique: true,
+      required: true,
     },
 
     businessType: {
@@ -116,14 +117,31 @@ const sellerSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
+    tags: {
+      type: [String],
+      enum: ["registered", "verified", "gold"],
+      default: [],
+    },
+    isPublic: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
 // 🔧 Auto-generate storeSlug from companyName
-sellerSchema.pre("validate", function (next) {
-  if (this.companyName && !this.storeSlug) {
-    this.storeSlug = slugify(this.companyName, { lower: true, strict: true });
+sellerSchema.pre("validate", async function (next) {
+  if (this.companyName) {
+    const slugify = require("slugify");
+    let baseSlug = slugify(this.companyName, { lower: true, strict: true });
+    let slug = baseSlug;
+    let count = 1;
+    // Only check for uniqueness if the slug is new or companyName changed
+    while (await this.constructor.findOne({ storeSlug: slug, _id: { $ne: this._id } })) {
+      slug = `${baseSlug}-${count++}`;
+    }
+    this.storeSlug = slug;
   }
   next();
 });
