@@ -268,6 +268,24 @@ const AdminDashboard = () => {
             </span>
             <SlArrowRight style={{ width: "12px", marginLeft: "auto" }} />
           </div>
+          <Link
+  to="/admin/rfq"
+  className="btn fw-bold mb-2"
+  style={{
+    background: "linear-gradient(90deg, #FB5420 44.4%, #C52F03 100%)",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    padding: "12px 24px",
+    fontSize: "1rem",
+    boxShadow: "0 2px 8px rgba(251, 84, 32, 0.08)",
+    marginTop: "10px",
+    width: "100%",
+    textAlign: "center",
+  }}
+>
+  RFQ Management
+</Link>
         </div>
         <button
           style={styles.logout}

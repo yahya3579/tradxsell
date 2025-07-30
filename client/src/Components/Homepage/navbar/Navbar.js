@@ -326,13 +326,18 @@ const Navbar = () => {
           <li>
             <NavLink to="/helpCenter">Help Center</NavLink>
           </li>
-          
           {role !== "seller" && role !== "QualityAssurance" && (
-            <li>
-              <NavLink to="/seller-register">Become a seller</NavLink>
-            </li>
+            <>
+              <li>
+                <NavLink to="/seller-register">Become a seller</NavLink>
+              </li>
+              <li>
+                <NavLink to="/user/rfq" >
+                  RFQ (Request for Quotation)
+                </NavLink>
+              </li>
+            </>
           )}
-          
         </ul>
       </div>
 

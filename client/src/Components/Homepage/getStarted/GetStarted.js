@@ -88,6 +88,9 @@ export default function GetStarted() {
   const handlebecomesellerclick = () => {
     navigate("/seller-register");
   };
+  const handleRFQClick = () => {
+    navigate("/user/rfq");
+  };
 
   return (
     <div className="container-fluid p-0">
@@ -149,6 +152,17 @@ export default function GetStarted() {
                 onClick={handlebecomesellerclick}
               >
                 Become Seller
+              </button>
+              <button
+                className="btn rounded-2 custombutton fw-bold"
+                style={{
+                  color: "white",
+                  border: "1px solid #1976d2",
+                  background: "linear-gradient(90deg, #1976d2 0%, #21cbf3 100%)",
+                }}
+                onClick={handleRFQClick}
+              >
+                RFQ (Request for Quotation)
               </button>
             </div>
           </div>

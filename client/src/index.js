@@ -89,6 +89,9 @@ import Dashboard from "./Components/SellerDashboardV2/Dashboard.js";
 import ManageProductsV2 from "./Components/SellerDashboardV2/ManageProductsV2.js";
 import SellerComplainV2 from "./Components/SellerDashboardV2/SellerComplainV2.js";
 
+import UserRFQ from './Components/UserRFQ.js';
+import AdminRFQ from './Components/MainAdminV2/AdminRFQ.js';
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
@@ -264,6 +267,8 @@ root.render(
                 <Route path="/admin-register" element={<AdminRegister />} />
 
                 <Route path="/verify-email/:token" element={<VerifyEmail />} />
+                <Route path="/user/rfq" element={<UserRFQ />} />
+                <Route path="/admin/rfq" element={<AdminRFQ />} />
               </Routes>
             </CurrencyProvider>
           </CheckoutProvider>

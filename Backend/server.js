@@ -45,6 +45,7 @@ const paymentRoutes = require('./Routes/paymentRoutes');
 const ChatRoutes = require('./Routes/ChatRoutes.js');
 const ChatsRoutes = require('./Routes/ChatIdRoute.js');
 const sellerRoutes = require('./Routes/SellerRoute');
+const rfqCustomRoute = require('./Routes/RFQCustomRoute');
 
 const server = http.createServer(app); // Create an HTTP server
 const io = new Server(server, {
@@ -71,6 +72,7 @@ app.use("/productSearch", productSearchRoutes);
 app.use("/payment", paymentRoutes);
 app.use("/chat", ChatRoutes);
 app.use("/chats", ChatsRoutes);  // for specific purpose 
+app.use('/rfq/custom', rfqCustomRoute);
 
 // MongoDB connection
 const mongoURL = process.env.MONGODB_URL;

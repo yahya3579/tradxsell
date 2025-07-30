@@ -1,6 +1,8 @@
 import axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../AuthContext.js';
+import { Link } from 'react-router-dom';
+// REMOVE: import { Badge, Table, Spinner } from 'react-bootstrap';
 
 function UserDashboard() {
     const { id } = useContext(AuthContext);
@@ -57,6 +59,21 @@ function UserDashboard() {
         fetchInfo();
     }
 }, [id]);
+
+    // REMOVE: useEffect(() => {
+    //   if (!id) return;
+    //   setRfqLoading(true);
+    //   setRfqError(null);
+    //   axios.get(`${process.env.REACT_APP_LOCALHOST_URL}/rfq/user/${id}`)
+    //     .then(res => {
+    //       setRfqs(res.data);
+    //       setRfqLoading(false);
+    //     })
+    //     .catch(err => {
+    //       setRfqError('Failed to load RFQs');
+    //       setRfqLoading(false);
+    //     });
+    // }, [id]);
 
     const handleEditClick = (field) => {
         setEditField(field);
@@ -157,6 +174,11 @@ function UserDashboard() {
         <div className='home-container' style={{ backgroundColor: "white", height: "100vh", padding: "20px" }}>
             <h1 style={{ color: "#EF5B2B", textAlign: "center", fontWeight: "bold", marginBottom: "40px" }}>Welcome, {username}!</h1>
             <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px", borderRadius: "10px", backgroundColor: "#f9f9f9", boxShadow: "0px 0px 15px rgba(0, 0, 0, 0.1)" }}>
+                <div className="mb-3">
+                    <Link to="/user/rfq" className="btn btn-outline-primary">
+                        Request for Quotation (RFQ)
+                    </Link>
+                </div>
                 {updateMessage && <p style={{ color: "#28a745", textAlign: "center", fontSize: "18px", marginBottom: "20px" }}>{updateMessage}</p>}
                 <div style={{ marginBottom: "20px", fontSize: "18px", color: "#333" }}>
                     <span style={{ fontWeight: "bold", color: "#EF5B2B" }}>Username:</span>
@@ -218,6 +240,51 @@ function UserDashboard() {
                     )}
                 </div>
             </div>
+            {/* REMOVE: <div className="mt-4">
+              <h3>RFQ Requests</h3>
+              {rfqLoading ? (
+                <Spinner animation="border" />
+              ) : rfqError ? (
+                <div className="text-danger">{rfqError}</div>
+              ) : rfqs.length === 0 ? (
+                <div>No RFQ requests found.</div>
+              ) : (
+                <Table striped bordered hover responsive>
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Quantity</th>
+                      <th>Delivery Period</th>
+                      <th>Location</th>
+                      <th>Notes</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rfqs.map(rfq => (
+                      <tr key={rfq._id}>
+                        <td>{rfq.productName}</td>
+                        <td>{rfq.quantity}</td>
+                        <td>{rfq.deliveryPeriod}</td>
+                        <td>{rfq.deliveryLocation}</td>
+                        <td>{rfq.notes}</td>
+                        <td>
+                          <Badge bg={
+                            rfq.status === 'under review' ? 'secondary' :
+                            rfq.status === 'delivered' ? 'info' :
+                            rfq.status === 'approved' ? 'success' :
+                            rfq.status === 'rejected' ? 'danger' :
+                            rfq.status === 'quoted' ? 'warning' : 'dark'
+                          }>
+                            {rfq.status.charAt(0).toUpperCase() + rfq.status.slice(1)}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              )}
+            </div> */}
         </div>
     );
 }

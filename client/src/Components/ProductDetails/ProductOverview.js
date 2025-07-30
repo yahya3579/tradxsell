@@ -9,6 +9,7 @@ import axios from "axios";
 import { MdChat, MdStore } from "react-icons/md";
 import { useNavigate } from 'react-router-dom'; 
 import { CurrencyContext } from "../../CurrencyContext";
+
 export default function ProductOverview() {
   const { currency, rates } = useContext(CurrencyContext);
 
@@ -29,6 +30,15 @@ export default function ProductOverview() {
   const [size, setSize] = useState("");
   const [color, setColor] = useState("");
   const [sellerData, setSellerData] = useState(null);
+  const [showRFQ, setShowRFQ] = useState(false);
+  const [rfqQuantity, setRFQQuantity] = useState(0);
+  const [rfqPeriod, setRFQPeriod] = useState('');
+  const [rfqLocation, setRFQLocation] = useState('');
+  const [rfqNotes, setRFQNotes] = useState('');
+  const [rfqLoading, setRFQLoading] = useState(false);
+  const [rfqSuccess, setRFQSuccess] = useState(null);
+  const [rfqError, setRFQError] = useState(null);
+
 
   const senderId = localStorage.getItem("id");
   const sellerEmail = product?.sellerEmail;
