@@ -84,11 +84,24 @@ const InventoryManagement = () => {
 
   const handleDeleteProduct = async (productId) => {
     try {
-      await axios.delete(`${process.env.REACT_APP_LOCALHOST_URL}/products/${productId}`);
-      setproductsInventory(prev => prev.filter(product => product.id !== productId));
+      // Show confirmation dialog
+      if (!window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
+        return;
+      }
+
+      await axios.delete(`${process.env.REACT_APP_LOCALHOST_URL}/products?id=${productId}`);
+      
+      // Remove the product from state using both id and _id
+      setproductsInventory(prev => prev.filter(product => 
+        product.id !== productId && product._id !== productId
+      ));
+      
+      // Show success message
+      alert("Product deleted successfully!");
     } catch (err) {
       console.error("Error deleting product:", err);
       setError("Failed to delete product. Please try again.");
+      alert("Failed to delete product. Please try again.");
     }
   };
 
@@ -227,9 +240,18 @@ const InventoryManagement = () => {
                           alt={product.name}
                           style={modernStyles.productImage}
                           onError={(e) => {
-                            e.target.src = '/api/placeholder/300/200';
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
                           }}
                         />
+                        <div style={{
+                          ...modernStyles.productImage,
+                          ...modernStyles.imagePlaceholder,
+                          display: 'none'
+                        }}>
+                          <Package size={48} color="#9ca3af" />
+                          <span style={modernStyles.placeholderText}>No Image</span>
+                        </div>
                         <div style={modernStyles.quantityBadge}>
                           <Box size={14} />
                           <span>{product?.quantity || 0}</span>
@@ -266,7 +288,7 @@ const InventoryManagement = () => {
 
                         <div style={modernStyles.productActions}>
                           <Link
-                            to={`/adminproducts/${product.id}`}
+                            to={`/adminproducts/${product._id || product.id}`}
                             style={modernStyles.viewButton}
                           >
                             <Eye size={14} />
@@ -274,7 +296,7 @@ const InventoryManagement = () => {
                           </Link>
                           <button
                             style={modernStyles.deleteButton}
-                            onClick={() => handleDeleteProduct(product.id)}
+                            onClick={() => handleDeleteProduct(product._id || product.id)}
                           >
                             <Trash2 size={14} />
                             Delete
@@ -307,9 +329,18 @@ const InventoryManagement = () => {
                           alt={product.name}
                           style={modernStyles.productImage}
                           onError={(e) => {
-                            e.target.src = '/api/placeholder/300/200';
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
                           }}
                         />
+                        <div style={{
+                          ...modernStyles.productImage,
+                          ...modernStyles.imagePlaceholder,
+                          display: 'none'
+                        }}>
+                          <Package size={48} color="#9ca3af" />
+                          <span style={modernStyles.placeholderText}>No Image</span>
+                        </div>
                         <div style={modernStyles.quantityBadge}>
                           <Box size={14} />
                           <span>{product?.quantity || 0}</span>
@@ -338,7 +369,7 @@ const InventoryManagement = () => {
 
                         <div style={modernStyles.productActions}>
                           <Link
-                            to={`/adminproducts/${product.id}`}
+                            to={`/adminproducts/${product._id || product.id}`}
                             style={modernStyles.viewButton}
                           >
                             <Eye size={14} />
@@ -346,7 +377,7 @@ const InventoryManagement = () => {
                           </Link>
                           <button
                             style={modernStyles.deleteButton}
-                            onClick={() => handleDeleteProduct(product.id)}
+                            onClick={() => handleDeleteProduct(product._id || product.id)}
                           >
                             <Trash2 size={14} />
                             Delete
@@ -379,9 +410,18 @@ const InventoryManagement = () => {
                           alt={product.name}
                           style={modernStyles.productImage}
                           onError={(e) => {
-                            e.target.src = '/api/placeholder/300/200';
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
                           }}
                         />
+                        <div style={{
+                          ...modernStyles.productImage,
+                          ...modernStyles.imagePlaceholder,
+                          display: 'none'
+                        }}>
+                          <Package size={48} color="#9ca3af" />
+                          <span style={modernStyles.placeholderText}>No Image</span>
+                        </div>
                         <div style={modernStyles.quantityBadge}>
                           <Box size={14} />
                           <span>{product?.quantity || 0}</span>
@@ -410,7 +450,7 @@ const InventoryManagement = () => {
 
                         <div style={modernStyles.productActions}>
                           <Link
-                            to={`/adminproducts/${product.id}`}
+                            to={`/adminproducts/${product._id || product.id}`}
                             style={modernStyles.viewButton}
                           >
                             <Eye size={14} />
@@ -418,7 +458,7 @@ const InventoryManagement = () => {
                           </Link>
                           <button
                             style={modernStyles.deleteButton}
-                            onClick={() => handleDeleteProduct(product.id)}
+                            onClick={() => handleDeleteProduct(product._id || product.id)}
                           >
                             <Trash2 size={14} />
                             Delete
@@ -682,6 +722,20 @@ const modernStyles = {
     height: "100%",
     objectFit: "cover",
     transition: "transform 0.2s ease",
+  },
+  imagePlaceholder: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f9fafb",
+    color: "#6b7280",
+    fontSize: "14px",
+    fontWeight: "500",
+  },
+  placeholderText: {
+    marginTop: "8px",
+    fontSize: "12px",
   },
   quantityBadge: {
     position: "absolute",

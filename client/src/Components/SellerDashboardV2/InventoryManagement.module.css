@@ -16,6 +16,10 @@
   transform: scale(1.05);
 }
 
+.productCard:hover .imagePlaceholder {
+  background-color: #f3f4f6;
+}
+
 /* Button hover effects */
 .viewButton:hover {
   background-color: #e04a1f !important;
