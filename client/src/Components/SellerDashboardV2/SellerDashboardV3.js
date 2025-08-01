@@ -860,9 +860,9 @@ const Dashboard = () => {
                     >
                       <Link
                         className="dropdown-item"
-                        to="/admin/sellerdashboard/salesdashboard"
+                        to="/admin/sellerdashboard/inventory"
                       >
-                        View Sales Dashboard
+                        View Inventory Dashboard
                       </Link>
                     </div>
                   )}

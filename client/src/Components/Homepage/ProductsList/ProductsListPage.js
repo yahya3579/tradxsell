@@ -6,6 +6,35 @@ import { useLocation } from "react-router-dom";
 import Categories from "../categories/Categories";
 import "./ProductListPage.css"; // Import your CSS file for styling
 
+const categoryOptions = {
+  "Jewelry, Eyewear": ["Rings", "Necklaces", "Bracelets", "Earrings", "Sunglasses", "Watches"],
+  "Vehicle Parts & Accessories": ["Engine Parts", "Tires", "Batteries", "Car Electronics", "Lighting"],
+  "Industrial Machinery": ["CNC Machines", "Packaging Machines", "Textile Machinery", "Pumps", "Compressors"],
+  "Luggage, Bags & Cases": ["Suitcases", "Backpacks", "Handbags", "Laptop Bags", "Travel Accessories"],
+  "Construction & Real Estate": ["Building Materials", "Doors & Windows", "Flooring", "Paints", "Plumbing"],
+  "Personal Care & Household": ["Personal Care Appliances", "Cleaning Supplies", "Laundry", "Bathroom Accessories"],
+  "Lights & Lighting": ["LED Bulbs", "Ceiling Lights", "Outdoor Lighting", "Smart Lighting"],
+  "Renewable Energy": ["Solar Panels", "Wind Turbines", "Inverters", "Batteries"],
+  "Shoes & Accessories": ["Men's Shoes", "Women's Shoes", "Kids' Shoes", "Shoe Accessories"],
+  "Furniture": ["Sofas", "Beds", "Tables", "Chairs", "Cabinets"],
+  "Tools & Hardware": ["Hand Tools", "Power Tools", "Fasteners", "Measuring Tools"],
+  "Home Appliances": ["Refrigerators", "Washing Machines", "Microwaves", "Vacuum Cleaners"],
+  "Vehicles & Transportation": ["Cars", "Motorcycles", "Bicycles", "Trucks", "Public Transport"],
+  "Vehicle Accessories": ["Seat Covers", "Car Mats", "Phone Holders", "Car Chargers"],
+  "Gifts & Crafts": ["Gift Boxes", "Handmade Crafts", "Greeting Cards", "Party Supplies"],
+  "Health Care": ["Medical Devices", "Supplements", "Personal Protective Equipment"],
+  "Electronics": ["Mobile Phones", "Laptops", "Cameras", "Audio Devices"],
+  "Clothing": ["Men's Clothing", "Women's Clothing", "Kids' Clothing", "Sportswear"],
+  "Toys": ["Educational Toys", "Action Figures", "Dolls", "Outdoor Toys"],
+  "Optical": ["Eyeglasses", "Contact Lenses", "Sunglasses", "Optical Instruments"],
+  "Tools & Equipment": ["Workshop Tools", "Measuring Equipment", "Safety Equipment"],
+  "Beauty & Personal Care": ["Skincare", "Haircare", "Makeup", "Fragrances"],
+  "Household & Gardens": ["Garden Tools", "Outdoor Furniture", "Planters", "BBQ Equipment"],
+  "Accessories": ["Belts", "Hats", "Scarves", "Wallets"],
+  "Agricultural Products": ["Seeds", "Fertilizers", "Pesticides", "Farm Tools"],
+  "Tractors & Accessories": ["Tractors", "Tractor Parts", "Implements"],
+};
+
 const ProductsListPage = () => {
   const location = useLocation();
   const [products, setProducts] = useState([]);
@@ -13,28 +42,69 @@ const ProductsListPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [subCategory, setSubCategory] = useState("");
   const { currency, rates } = useContext(CurrencyContext);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          `${process.env.REACT_APP_LOCALHOST_URL}/products/all/random`
-        );
-        if (!response.ok) throw new Error("Network response was not ok");
-        const data = await response.json();
-        setProducts(data.length > 0 ? data : []);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Detect category from URL (e.g., /category/Jewelry, Eyewear)
+  let category = "";
+  const match = location.pathname.match(/\/category\/(.+)$/);
+  if (match) {
+    category = decodeURIComponent(match[1]);
+  }
 
-    fetchProducts();
-  }, []);
+  // Build a flat list of all sub-categories for the dropdown
+  const allSubCategories = Array.from(
+    new Set(
+      Object.values(categoryOptions).flat()
+    )
+  );
+
+  // Fetch products from backend when category or subCategory changes
+  useEffect(() => {
+    setLoading(true);
+    if (!category) {
+      // All Products page: fetch by sub-category if selected, else fetch all
+      if (subCategory) {
+        fetch(`${process.env.REACT_APP_LOCALHOST_URL}/products/subcategory?name=${encodeURIComponent(subCategory)}`)
+          .then(res => res.json())
+          .then(data => {
+            setProducts(Array.isArray(data) ? data : []);
+            setLoading(false);
+          })
+          .catch(err => {
+            setProducts([]);
+            setLoading(false);
+          });
+      } else {
+        fetch(`${process.env.REACT_APP_LOCALHOST_URL}/products/all/random`)
+          .then(res => res.json())
+          .then(data => {
+            setProducts(Array.isArray(data) ? data : []);
+            setLoading(false);
+          })
+          .catch(err => {
+            setProducts([]);
+            setLoading(false);
+          });
+      }
+    } else {
+      // Category present: fetch by category (and subCategory)
+      const params = new URLSearchParams();
+      params.append("name", category.toLowerCase());
+      if (subCategory) params.append("subCategory", subCategory);
+      fetch(`${process.env.REACT_APP_LOCALHOST_URL}/products/category?${params.toString()}`)
+        .then(res => res.json())
+        .then(data => {
+          setProducts(Array.isArray(data) ? data : []);
+          setLoading(false);
+        })
+        .catch(err => {
+          setProducts([]);
+          setLoading(false);
+        });
+    }
+  }, [category, subCategory]);
+
   const failedImageUrls = new Set();
   useEffect(() => {
     if (location.state?.filter) {
@@ -42,6 +112,7 @@ const ProductsListPage = () => {
     }
   }, [location.state]);
 
+  // Filter products by search, type, and status only (category/subCategory handled by backend)
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name
       .toLowerCase()
@@ -50,7 +121,6 @@ const ProductsListPage = () => {
       typeFilter === "" || product.type === typeFilter.toLowerCase();
     const matchesStatus =
       statusFilter === "" || product.status === statusFilter.toLowerCase();
-
     return matchesSearch && matchesType && matchesStatus;
   });
 
@@ -86,8 +156,41 @@ const ProductsListPage = () => {
           padding: "20px",
         }}
       >
-        All Products
+        {category ? category : "All Products"}
       </h1>
+
+      {/* Sub-category dropdown for All Products page */}
+      {!category && (
+        <div className="d-flex justify-content-center mb-4">
+          <select
+            className="form-select"
+            style={{ width: 260, maxWidth: "100%" }}
+            value={subCategory}
+            onChange={e => setSubCategory(e.target.value)}
+          >
+            <option value="">All Sub-Categories</option>
+            {allSubCategories.map(sub => (
+              <option key={sub} value={sub}>{sub}</option>
+            ))}
+          </select>
+        </div>
+      )}
+      {/* Sub-category dropdown for category page */}
+      {category && categoryOptions[category] && (
+        <div className="d-flex justify-content-center mb-4">
+          <select
+            className="form-select"
+            style={{ width: 260, maxWidth: "100%" }}
+            value={subCategory}
+            onChange={e => setSubCategory(e.target.value)}
+          >
+            <option value="">All Sub-Categories</option>
+            {categoryOptions[category].map(sub => (
+              <option key={sub} value={sub}>{sub}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Search and Filter Bar */}
       <div style={{ backgroundColor: "white", paddingTop: "1px" }}>

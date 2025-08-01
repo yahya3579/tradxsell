@@ -30,6 +30,35 @@ import {
   faHome,
 } from "@fortawesome/free-solid-svg-icons";
 
+const categoryOptions = {
+  "Jewelry, Eyewear": ["Rings", "Necklaces", "Bracelets", "Earrings", "Sunglasses", "Watches"],
+  "Vehicle Parts & Accessories": ["Engine Parts", "Tires", "Batteries", "Car Electronics", "Lighting"],
+  "Industrial Machinery": ["CNC Machines", "Packaging Machines", "Textile Machinery", "Pumps", "Compressors"],
+  "Luggage, Bags & Cases": ["Suitcases", "Backpacks", "Handbags", "Laptop Bags", "Travel Accessories"],
+  "Construction & Real Estate": ["Building Materials", "Doors & Windows", "Flooring", "Paints", "Plumbing"],
+  "Personal Care & Household": ["Personal Care Appliances", "Cleaning Supplies", "Laundry", "Bathroom Accessories"],
+  "Lights & Lighting": ["LED Bulbs", "Ceiling Lights", "Outdoor Lighting", "Smart Lighting"],
+  "Renewable Energy": ["Solar Panels", "Wind Turbines", "Inverters", "Batteries"],
+  "Shoes & Accessories": ["Men's Shoes", "Women's Shoes", "Kids' Shoes", "Shoe Accessories"],
+  "Furniture": ["Sofas", "Beds", "Tables", "Chairs", "Cabinets"],
+  "Tools & Hardware": ["Hand Tools", "Power Tools", "Fasteners", "Measuring Tools"],
+  "Home Appliances": ["Refrigerators", "Washing Machines", "Microwaves", "Vacuum Cleaners"],
+  "Vehicles & Transportation": ["Cars", "Motorcycles", "Bicycles", "Trucks", "Public Transport"],
+  "Vehicle Accessories": ["Seat Covers", "Car Mats", "Phone Holders", "Car Chargers"],
+  "Gifts & Crafts": ["Gift Boxes", "Handmade Crafts", "Greeting Cards", "Party Supplies"],
+  "Health Care": ["Medical Devices", "Supplements", "Personal Protective Equipment"],
+  "Electronics": ["Mobile Phones", "Laptops", "Cameras", "Audio Devices"],
+  "Clothing": ["Men's Clothing", "Women's Clothing", "Kids' Clothing", "Sportswear"],
+  "Toys": ["Educational Toys", "Action Figures", "Dolls", "Outdoor Toys"],
+  "Optical": ["Eyeglasses", "Contact Lenses", "Sunglasses", "Optical Instruments"],
+  "Tools & Equipment": ["Workshop Tools", "Measuring Equipment", "Safety Equipment"],
+  "Beauty & Personal Care": ["Skincare", "Haircare", "Makeup", "Fragrances"],
+  "Household & Gardens": ["Garden Tools", "Outdoor Furniture", "Planters", "BBQ Equipment"],
+  "Accessories": ["Belts", "Hats", "Scarves", "Wallets"],
+  "Agricultural Products": ["Seeds", "Fertilizers", "Pesticides", "Farm Tools"],
+  "Tractors & Accessories": ["Tractors", "Tractor Parts", "Implements"],
+};
+
 const allItems = [
   {
     id: 1,
@@ -192,6 +221,8 @@ const allItems = [
 const Categories = () => {
   const [itemsPerSlide, setItemsPerSlide] = useState(6);
   const [groupedItems, setGroupedItems] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("");
 
   // Function to determine items per slide based on screen width
   const updateItemsPerSlide = () => {
@@ -240,21 +271,46 @@ const Categories = () => {
       <h2 className="ms-md-5 ms-3 mb-5 fw-bold">
         Search by <span style={{ color: "#FB5420" }}>categories</span>{" "}
       </h2>
+      {/* Sub-category dropdown logic */}
+      {selectedCategory && (
+        <div className="mb-4 d-flex flex-column align-items-start align-items-md-center">
+          <label className="fw-bold mb-2">Sub-Category for <span style={{color:'#FB5420'}}>{selectedCategory}</span>:</label>
+          <select
+            className="form-select"
+            style={{ width: 260, maxWidth: "100%" }}
+            value={selectedSubCategory}
+            onChange={e => setSelectedSubCategory(e.target.value)}
+          >
+            <option value="">Select Sub-Category</option>
+            {categoryOptions[selectedCategory]?.map(sub => (
+              <option key={sub} value={sub}>{sub}</option>
+            ))}
+          </select>
+          {selectedSubCategory && (
+            <div className="mt-2" style={{fontWeight:600}}>
+              Selected: <span style={{color:'#1976d2'}}>{selectedSubCategory}</span>
+            </div>
+          )}
+        </div>
+      )}
       <Carousel controls={true} interval={null} indicators={true}>
         {groupedItems.map((group, index) => (
           <Carousel.Item key={index}>
             <div className="category-row">
               {group.map((item) => (
                 <div key={item.id} className="category-item">
-                  <Link
-                    to={item.link}
-                    style={{ textDecoration: "none", color: "black" }}
+                  <div
+                    style={{ textDecoration: "none", color: "black", cursor: "pointer" }}
+                    onClick={() => {
+                      setSelectedCategory(item.category);
+                      setSelectedSubCategory("");
+                    }}
                   >
                     <div className="category-icon-wrapper">
                       <div className="category-icon-div">{item.icon}</div>
                     </div>
                     <p className="category-name">{item.category}</p>
-                  </Link>
+                  </div>
                 </div>
               ))}
             </div>

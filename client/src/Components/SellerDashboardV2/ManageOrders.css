@@ -1,13 +1,14 @@
-.ManageOrder{
+/* ManageOrders Enhanced Styling */
+.ManageOrder {
     color: rgb(224, 224, 224);
     display: flex;
     background-color: rgb(255, 255, 255);
     min-height: 100vh;
 }
 
-@media(max-width: 991px){
-    .ManageOrder{
-        flex-direction:column;
+@media(max-width: 991px) {
+    .ManageOrder {
+        flex-direction: column;
     }
 }
 
@@ -16,12 +17,54 @@
     flex-direction: column;
     gap: 20px;
     padding: 20px;
-  }
+}
 
-
-  .card-row{
+.card-row {
     display: flex;
     flex-direction: row;
     align-items: start;
     justify-content: start;
-  }
+}
+
+/* Animation for spinner */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Hover effects for order cards */
+.order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.order-card:hover .product-img {
+    transform: scale(1.05);
+}
+
+/* Button hover effects */
+.view-button:hover {
+    background-color: #e04a1f;
+    transform: translateY(-1px);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .orders-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        padding: 16px !important;
+    }
+    
+    .product-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+    }
+    
+    .order-meta {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+    }
+}

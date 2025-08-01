@@ -4,6 +4,7 @@ import { AuthContext } from "../../AuthContext.js";
 import "./ManageOrders.css";
 import style from "./Ordercard.module.css";
 import { Link } from "react-router-dom";
+import { Package, User, Mail, Eye, Calendar, DollarSign, CheckCircle, Clock, AlertCircle } from "lucide-react";
 function ManageOrdersV2() {
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState("");
@@ -121,97 +122,141 @@ function ManageOrdersV2() {
   };
 
   if (error) {
-    return <div style={styles.errorMessage}>Error: {error}</div>;
+    return (
+      <div style={styles.container}>
+        <div style={styles.errorContainer}>
+          <AlertCircle size={48} color="#ef4444" />
+          <h3 style={styles.errorTitle}>Error Loading Orders</h3>
+          <p style={styles.errorMessage}>{error}</p>
+        </div>
+      </div>
+    );
   }
 
   if (loading) {
-    return <div style={styles.loadingMessage}>Loading orders...</div>;
+    return (
+      <div style={styles.container}>
+        <div style={styles.loadingContainer}>
+          <div style={styles.spinner}></div>
+          <h3 style={styles.loadingTitle}>Loading Orders...</h3>
+          <p style={styles.loadingMessage}>Please wait while we fetch your order data</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="ManageOrder">
-      <main style={{ flex: 1, padding: "20px" }}>
-        <header
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "20px",
-            borderBottom: "1px solid gray",
-            paddingBottom: "10px",
-          }}
-        >
-          <h2 style={{ fontSize: "16px", color: "black" }}>Manage Orders</h2>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <span style={{ marginRight: "10px", color: "black" }}>
-              {sellerusername}
-            </span>
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                backgroundColor: "#EF5B2B",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: "bold",
-              }}
-            >
+    <div style={styles.container}>
+      <div style={styles.content}>
+        {/* Header Section */}
+        <div style={styles.header}>
+          <div style={styles.headerLeft}>
+            <h1 style={styles.pageTitle}>
+              <Package size={28} style={styles.titleIcon} />
+              Manage Orders
+            </h1>
+            <p style={styles.subtitle}>
+              Track and manage your product orders
+            </p>
+          </div>
+          <div style={styles.userInfo}>
+            <span style={styles.username}>{sellerusername}</span>
+            <div style={styles.avatar}>
               {sellerusername.charAt(0).toUpperCase()}
             </div>
           </div>
-        </header>
+        </div>
 
-        <div className="container">
-          <div className="container">
-            <div className="card-container">
-              {Object.keys(productOrders).map((productId) => (
-                <div key={productId} className="card-row">
-                  <h6 className="text-black">Product ID: {productId}</h6>
+        {/* Orders Content */}
+        {Object.keys(productOrders).length === 0 ? (
+          <div style={styles.emptyState}>
+            <Package size={64} color="#9ca3af" />
+            <h3 style={styles.emptyTitle}>No Orders Found</h3>
+            <p style={styles.emptyMessage}>
+              You don't have any orders yet. When customers purchase your products, they'll appear here.
+            </p>
+          </div>
+        ) : (
+          <div style={styles.ordersContainer}>
+            {Object.keys(productOrders).map((productId) => (
+              <div key={productId} style={styles.productSection}>
+                <div style={styles.productHeader}>
+                  <h3 style={styles.productTitle}>
+                    Product ID: <span style={styles.productId}>{productId}</span>
+                  </h3>
+                  <span style={styles.orderCount}>
+                    {productOrders[productId].length} order{productOrders[productId].length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                
+                <div style={styles.ordersGrid}>
                   {productOrders[productId].map((order) => (
-                    <div key={order._id} className={style.card}>
-                      {/* Card Image */}
-                      <div className={style.cardImg}>
+                    <div key={order._id} style={styles.orderCard}>
+                      {/* Product Image */}
+                      <div style={styles.productImage}>
                         <img
                           src={`${process.env.REACT_APP_LOCALHOST_URL}${order.items[0]?.imageUrl}`}
                           alt={order.items[0]?.name || "Product Image"}
-                          className={style.img}
+                          style={styles.productImg}
+                          onError={(e) => {
+                            e.target.src = '/api/placeholder/200/200';
+                          }}
                         />
                       </div>
-                      {/* Card Info */}
-                      <div className={style.cardInfo}>
-                        <p className={style.textTitle}>
+
+                      {/* Order Details */}
+                      <div style={styles.orderDetails}>
+                        <h4 style={styles.productName}>
                           {order.items[0]?.name || "Product Name"}
-                        </p>
-                        <p
-                          className={style.textBody}
-                          style={{ color: "black", fontSize: "12px" }}
-                        >
-                          Ordered by: {order.username} <br />
-                          Email: {order.email} <br />
-                          Status:{" "}
-                          <span
-                            className={
-                              order.status === "Completed"
-                                ? style.success
-                                : style.warning
-                            }
-                          >
-                            {order.status}
-                          </span>
-                        </p>
-                      </div>
-                      {/* Card Footer */}
-                      <div className={style.cardFooter}>
-                        <span className={style.textTitle}>
-                          ${order.items[0]?.price || "0.00"}
-                        </span>
-                        <div className={style.cardButton}>
+                        </h4>
+                        
+                        <div style={styles.orderInfo}>
+                          <div style={styles.infoRow}>
+                            <User size={16} color="#6b7280" />
+                            <span style={styles.infoText}>{order.username}</span>
+                          </div>
+                          <div style={styles.infoRow}>
+                            <Mail size={16} color="#6b7280" />
+                            <span style={styles.infoText}>{order.email}</span>
+                          </div>
+                          <div style={styles.infoRow}>
+                            <Calendar size={16} color="#6b7280" />
+                            <span style={styles.infoText}>
+                              {new Date(order.orderDate || order.createdAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Status and Price */}
+                        <div style={styles.orderMeta}>
+                          <div style={{
+                            ...styles.statusBadge,
+                            ...(order.status === "Completed" ? styles.statusCompleted : styles.statusPending)
+                          }}>
+                            {order.status === "Completed" ? (
+                              <CheckCircle size={14} />
+                            ) : (
+                              <Clock size={14} />
+                            )}
+                            <span>{order.status}</span>
+                          </div>
+                          <div style={styles.price}>
+                            <DollarSign size={16} />
+                            <span>{order.items[0]?.price || "0.00"}</span>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div style={styles.orderActions}>
                           <Link
                             to={`/adminproducts/${productId}`}
                             style={styles.viewButton}
                           >
+                            <Eye size={16} />
                             View Details
                           </Link>
                         </div>
@@ -219,131 +264,323 @@ function ManageOrdersV2() {
                     </div>
                   ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-        </div>
-      </main>
+        )}
+      </div>
     </div>
   );
 }
 
 const styles = {
-  manageOrders: {
-    display: "flex",
-    backgroundColor: "#121212",
-    minHeight: "100vh",
-    color: "#E0E0E0",
-  },
-  viewButton:{
-    fontSize:"10px",
-    textDecoration:"none"
-  },
   container: {
-    flexGrow: 1,
+    backgroundColor: "#f8f9fa",
+    minHeight: "100vh",
+    fontFamily: "system-ui, -apple-system, sans-serif",
+  },
+  content: {
     maxWidth: "1200px",
     margin: "0 auto",
-    padding: "2rem 1rem",
+    padding: "20px",
+  },
+  
+  // Header Styles
+  header: {
     display: "flex",
-    flexDirection: "column",
-    height: "100vh",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: "32px",
+    backgroundColor: "#fff",
+    padding: "24px",
+    borderRadius: "12px",
+    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+  },
+  headerLeft: {
+    flex: 1,
   },
   pageTitle: {
-    color: "white",
-    fontWeight: "bold",
-    marginBottom: "2rem",
-    fontSize: "2.5rem",
-  },
-  ordersContainer: {
-    overflowY: "scroll", // Enable vertical scrolling
-    flex: 1,
-    // Hide scrollbar styles
-    scrollbarWidth: "none", // Firefox
-    msOverflowStyle: "none", // Internet Explorer and Edge
-    "&::-webkit-scrollbar": {
-      display: "none", // Chrome, Safari, and Opera
-    },
-  },
-  orderCard: {
-    backgroundColor: "#1E1E1E",
-    border: "1px solid #333",
-    borderRadius: "8px",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-    marginBottom: "2rem",
-    overflow: "hidden",
-  },
-  orderHeader: {
-    backgroundColor: "#2C3E50",
-    padding: "1.5rem",
-    borderBottom: "1px solid #333",
-  },
-  orderTitle: {
-    color: "#EF5B2B",
-    fontWeight: "bold",
-    marginBottom: "1rem",
-    fontSize: "1.5rem",
-  },
-  orderDetails: {
-    "& p": {
-      marginBottom: "0.5rem",
-    },
-  },
-  orderItems: {
-    padding: "1.5rem",
-  },
-  itemsTitle: {
-    color: "#EF5B2B",
-    marginBottom: "1rem",
-    fontSize: "1.2rem",
-  },
-  itemRow: {
+    fontSize: "28px",
+    fontWeight: "600",
+    color: "#1f2937",
+    marginBottom: "4px",
     display: "flex",
     alignItems: "center",
-    marginBottom: "1rem",
-    paddingBottom: "1rem",
-    borderBottom: "1px solid #333",
+    gap: "12px",
   },
-  itemImage: {
-    width: "80px",
-    height: "80px",
-    marginRight: "1rem",
+  titleIcon: {
+    color: "#f2582c",
   },
-  itemImg: {
+  subtitle: {
+    fontSize: "16px",
+    color: "#6b7280",
+    margin: 0,
+  },
+  userInfo: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+  },
+  username: {
+    fontSize: "16px",
+    fontWeight: "500",
+    color: "#374151",
+  },
+  avatar: {
+    width: "40px",
+    height: "40px",
+    borderRadius: "50%",
+    backgroundColor: "#f2582c",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: "16px",
+  },
+
+  // Loading & Error States
+  loadingContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "80px 20px",
+    textAlign: "center",
+  },
+  spinner: {
+    width: "40px",
+    height: "40px",
+    border: "3px solid #f3f4f6",
+    borderTop: "3px solid #f2582c",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite",
+    marginBottom: "16px",
+  },
+  loadingTitle: {
+    fontSize: "20px",
+    fontWeight: "600",
+    color: "#374151",
+    marginBottom: "8px",
+  },
+  loadingMessage: {
+    fontSize: "16px",
+    color: "#6b7280",
+  },
+  errorContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "80px 20px",
+    textAlign: "center",
+  },
+  errorTitle: {
+    fontSize: "20px",
+    fontWeight: "600",
+    color: "#374151",
+    marginTop: "16px",
+    marginBottom: "8px",
+  },
+  errorMessage: {
+    fontSize: "16px",
+    color: "#6b7280",
+  },
+
+  // Empty State
+  emptyState: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "80px 20px",
+    textAlign: "center",
+    backgroundColor: "#fff",
+    borderRadius: "12px",
+    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+  },
+  emptyTitle: {
+    fontSize: "20px",
+    fontWeight: "600",
+    color: "#374151",
+    marginTop: "16px",
+    marginBottom: "8px",
+  },
+  emptyMessage: {
+    fontSize: "16px",
+    color: "#6b7280",
+    maxWidth: "400px",
+  },
+
+  // Orders Container
+  ordersContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "24px",
+  },
+
+  // Product Section
+  productSection: {
+    backgroundColor: "#fff",
+    borderRadius: "12px",
+    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+    overflow: "hidden",
+  },
+  productHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "20px 24px",
+    borderBottom: "1px solid #e5e7eb",
+    backgroundColor: "#f9fafb",
+  },
+  productTitle: {
+    fontSize: "18px",
+    fontWeight: "600",
+    color: "#374151",
+    margin: 0,
+  },
+  productId: {
+    color: "#f2582c",
+    fontFamily: "monospace",
+  },
+  orderCount: {
+    fontSize: "14px",
+    color: "#6b7280",
+    backgroundColor: "#f3f4f6",
+    padding: "4px 12px",
+    borderRadius: "20px",
+  },
+
+  // Orders Grid
+  ordersGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
+    gap: "20px",
+    padding: "24px",
+  },
+
+  // Order Card
+  orderCard: {
+    backgroundColor: "#fff",
+    border: "1px solid #e5e7eb",
+    borderRadius: "12px",
+    overflow: "hidden",
+    transition: "all 0.2s ease",
+    cursor: "pointer",
+  },
+
+  // Product Image
+  productImage: {
+    height: "160px",
+    overflow: "hidden",
+    backgroundColor: "#f9fafb",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  productImg: {
     width: "100%",
     height: "100%",
     objectFit: "cover",
-    borderRadius: "4px",
+    transition: "transform 0.2s ease",
   },
-  itemDetails: {
-    flexGrow: 1,
+
+  // Order Details
+  orderDetails: {
+    padding: "20px",
   },
-  itemName: {
-    marginBottom: "0.5rem",
-    fontSize: "1.1rem",
-    color: "#EF5B2B",
+  productName: {
+    fontSize: "16px",
+    fontWeight: "600",
+    color: "#374151",
+    marginBottom: "16px",
+    lineHeight: "1.4",
   },
-  itemStatus: {
-    minWidth: "120px",
+  orderInfo: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    marginBottom: "16px",
   },
-  statusSelect: {
-    width: "100%",
-    padding: "0.5rem",
-    border: "1px solid #555",
-    borderRadius: "4px",
-    backgroundColor: "#333",
-    color: "#E0E0E0",
+  infoRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
   },
-  errorMessage: {
-    color: "#ff6b6b",
-    textAlign: "center",
-    paddingTop: "2rem",
-    fontSize: "1.2rem",
+  infoText: {
+    fontSize: "14px",
+    color: "#6b7280",
   },
-  loadingMessage: {
-    color: "#EF5B2B",
-    textAlign: "center",
-    paddingTop: "2rem",
-    fontSize: "1.2rem",
+
+  // Order Meta
+  orderMeta: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "16px",
+  },
+  statusBadge: {
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
+    padding: "4px 8px",
+    borderRadius: "6px",
+    fontSize: "12px",
+    fontWeight: "500",
+  },
+  statusCompleted: {
+    backgroundColor: "#d1fae5",
+    color: "#065f46",
+  },
+  statusPending: {
+    backgroundColor: "#fef3c7",
+    color: "#92400e",
+  },
+  price: {
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
+    fontSize: "16px",
+    fontWeight: "600",
+    color: "#f2582c",
+  },
+
+  // Actions
+  orderActions: {
+    display: "flex",
+    gap: "8px",
+  },
+  viewButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    padding: "8px 16px",
+    backgroundColor: "#f2582c",
+    color: "#fff",
+    textDecoration: "none",
+    borderRadius: "6px",
+    fontSize: "14px",
+    fontWeight: "500",
+    transition: "background-color 0.2s ease",
+    border: "none",
+    cursor: "pointer",
+  },
+
+  // Responsive Design
+  "@media (max-width: 768px)": {
+    header: {
+      flexDirection: "column",
+      gap: "16px",
+      alignItems: "flex-start",
+    },
+    ordersGrid: {
+      gridTemplateColumns: "1fr",
+      padding: "16px",
+    },
+    content: {
+      padding: "12px",
+    },
   },
 };
 

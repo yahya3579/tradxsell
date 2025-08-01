@@ -11,13 +11,18 @@ router.post("/addnew", async (req, res) => {
     if (!productId) {
       return res.status(400).json({ success: false, message: 'Product ID is required' });
     }
-    
+    // Fetch the product to get sellerEmail
+    const product = await Product.findOne({ $or: [ { id: productId }, { _id: productId } ] });
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
     const review = new Review({
       productId: productId, // Keep as string
       username: req.body.username,
       userEmail: req.body.userEmail,
       review: req.body.review,
       rating: req.body.rating,
+      sellerEmail: product.sellerEmail
     });
     await review.save();
     res.status(201).json({ success: true, review });

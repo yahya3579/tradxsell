@@ -131,11 +131,6 @@ export default function FullNavbar() {
             </Link>
           </li>
           <li className="ps-0">
-            <Link to="/admin/sellerdashboard/salesdashboard"  className="text-white">
-              Sales
-            </Link>
-          </li>
-          <li className="ps-0">
             <Link to="/admin/sellerdashboard"  className="text-white">
               Account Health
             </Link>

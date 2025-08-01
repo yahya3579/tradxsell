@@ -189,45 +189,44 @@ app.put('/convert-to-seller', async (req, res) => {
 
 // Login user
 app.post('/login', async (req, res) => {
-  const { email, password, role } = req.body;
+  const { email, password } = req.body;
 
+  try {
+    const user = await User.findOne({ email });
 
-    try {
-        const user = await User.findOne({ email, role  });
-
-        if (!user) {
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
-        }
-
-        // Check if email is verified
-        if (!user.isVerified) {
-          return res.status(401).json({ 
-              success: false, 
-              message: 'Please verify your email before logging in',
-              needsVerification: true
-          });
-      }
-
-      // Compare the password using bcrypt
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-          return res.status(401).json({ success: false, message: 'Invalid credentials' });
-      }
-
-        // Inside your /login route, after password is matched
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-
-        // Login successful
-        return res.status(200).json({
-            success: true,
-            message: 'Login successful',
-            token, // Send token to frontend
-            user: { email: user.email, username: user.username, role: user.role, id: user._id }
-        });
-    } catch (error) {
-        console.error('Error logging in:', error);
-        return res.status(500).json({ success: false, message: 'Server error' });
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
+
+    // Check if email is verified
+    if (!user.isVerified) {
+      return res.status(401).json({
+        success: false,
+        message: 'Please verify your email before logging in',
+        needsVerification: true
+      });
+    }
+
+    // Compare the password using bcrypt
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+    // Login successful
+    return res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      token,
+      user: { email: user.email, username: user.username, role: user.role, id: user._id }
+    });
+  } catch (error) {
+    console.error('Error logging in:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
 });
 
 // (May 20)

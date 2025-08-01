@@ -58,7 +58,6 @@ import ProductOverview from "./Components/ProductDetails/ProductOverview.js";
 import SearchResultsPage from "./Components/SearchResultsPage/SearchResultsPage.js";
 import Inventry from "./Components/Admin/Inventry.js";
 import SellerDashboardV2 from "./Components/SellerDashboardV2/SellerDashboardV2.js";
-import SalesDashboard from "./Components/SellerDashboardV2/SalesDashboard.js";
 import ManageOrdersV2 from "./Components/SellerDashboardV2/ManageordersV2.js";
 import Feedback from "./Components/SellerDashboardV2/Feedback.js";
 import SellerComplain from "./Components/SellerDashboardV2/SellerComplain.js";
@@ -176,10 +175,6 @@ root.render(
                   element={<SellerTermsSndCondition />}
                 ></Route>
                 <Route
-                  path="/admin/sellerdashboard/salesdashboard"
-                  element={<SalesDashboard />}
-                ></Route>
-                <Route
                   path="/admin/sellerdashboard/orders"
                   element={<ManageOrdersV2 />}
                 ></Route>
@@ -212,7 +207,6 @@ root.render(
                   <Route path="inventory" element={<InventoryManagement />} />
                   <Route path="complains" element={<SellerComplainV2 />} />
                   <Route path="feedbacks" element={<Feedback />} />
-                  <Route path="salesdashboard" element={<SalesDashboard />} />
                   <Route path="accountsettings" element={<AccountSetting />} />
                 </Route>
 

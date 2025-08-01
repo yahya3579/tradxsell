@@ -1,42 +1,105 @@
-/* Styles for the navigation bar */
-.navbar {
-    background-color: #212429;
-    padding: 1rem;
-  }
-  
-  .navbarBrand {
-    font-size: 1rem;
-    color: #ffffff;
-  }
-  
-  /* Styles for navigation buttons */
-  .navButton {
-    border: none;
-    background-color: transparent;
-    color: #ffffff;
-    padding: 0.5rem 1rem;
-    margin-right: 0.5rem;
-    cursor: pointer;
-    font-size: 0.7rem;
-    transition: background-color 0.3s, color 0.3s;
-  }
-  
-  .navButton:hover {
-    background-color: #f2582c;
-    color: #ffffff;
-  }
-  
-  /* Active tab style */
-  .activeTab {
-    background-color: #f2582c;
-    color:white;
-    border-radius: 4px;
-  }
-  
-  /* Tab content styling */
-  .tabContent {
-    padding: 1.5rem;
-  }
-  
+/* Enhanced Inventory Management Styling */
 
+/* Animation for spinner */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Hover effects for product cards */
+.productCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.productCard:hover .productImage {
+  transform: scale(1.05);
+}
+
+/* Button hover effects */
+.viewButton:hover {
+  background-color: #e04a1f !important;
+}
+
+.deleteButton:hover {
+  background-color: #dc2626 !important;
+}
+
+/* Tab button hover effects */
+.tabButton:hover:not(.activeTabButton) {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+/* Stats card hover effects */
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Legacy styles (keeping for backwards compatibility) */
+.navbar {
+  background-color: #212429;
+  padding: 1rem;
+}
+
+.navbarBrand {
+  font-size: 1rem;
+  color: #ffffff;
+}
+
+.navButton {
+  border: none;
+  background-color: transparent;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  font-size: 0.7rem;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.navButton:hover {
+  background-color: #f2582c;
+  color: #ffffff;
+}
+
+.activeTab {
+  background-color: #f2582c;
+  color: white;
+  border-radius: 4px;
+}
+
+.tabContent {
+  padding: 1.5rem;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .productsGrid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  
+  .statsContainer {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .tabNavigation {
+    flex-direction: column !important;
+    gap: 4px !important;
+  }
+  
+  .header {
+    flex-direction: column !important;
+    gap: 16px !important;
+    align-items: flex-start !important;
+  }
+  
+  .productMeta {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+}
   

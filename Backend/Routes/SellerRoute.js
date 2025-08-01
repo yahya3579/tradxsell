@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Product = require('../Schemas/ProductSchema');
 const Order = require('../Schemas/OrderSchema');
 const Review = require('../Schemas/ReviewsSchema');
@@ -166,18 +167,33 @@ router.get('/recent-reviews', async (req, res) => {
 
     // Find all products by this seller
     const products = await Product.find({ sellerEmail: email });
-    const productIds = products.map(product => product.id);
-    const mongoIds = products.map(product => product._id.toString());
-    const allIds = [...productIds, ...mongoIds];
+    console.log(`DEBUG: Found ${products.length} products for seller ${email}`);
+    console.log('DEBUG: Products:', products.map(p => ({ id: p.id, _id: p._id.toString(), name: p.name })));
+    
+    // Collect both id and _id for each product to match reviews
+    const allProductIds = [];
+    products.forEach(product => {
+      if (product.id) allProductIds.push(product.id);
+      if (product._id) allProductIds.push(product._id.toString());
+    });
+    console.log('DEBUG: All product IDs to search for:', allProductIds);
 
-    if (allIds.length === 0) {
+    if (allProductIds.length === 0) {
+      console.log('DEBUG: No product IDs found, returning empty array');
       return res.json([]); // Return empty array if no products
     }
 
-    // Find all reviews for these products
+    // Find all reviews for these products (matching either id or _id)
+    // Search for both string and ObjectId versions
     const reviews = await Review.find({
-      productId: { $in: allIds }
+      $or: [
+        { productId: { $in: allProductIds } }, // String version
+        { productId: { $in: allProductIds.map(id => new mongoose.Types.ObjectId(id)) } } // ObjectId version
+      ]
     }).sort({ createdAt: -1 }); // Sort by newest first
+    
+    console.log(`DEBUG: Found ${reviews.length} reviews`);
+    console.log('DEBUG: Reviews:', reviews.map(r => ({ productId: r.productId, username: r.username, review: r.review })));
 
     res.json(reviews);
   } catch (error) {
@@ -656,6 +672,97 @@ router.put('/admin/update-tags-role', async (req, res) => {
   } catch (error) {
     console.error('Error updating tags/role:', error);
     res.status(500).json({ error: 'Failed to update tags/role' });
+  }
+});
+
+// Get all orders for a seller
+router.get('/orders', async (req, res) => {
+  try {
+    const sellerEmail = req.query.email;
+    if (!sellerEmail) return res.status(400).json({ error: 'Seller email is required' });
+    const products = await Product.find({ sellerEmail });
+    const productIds = products.map(p => p.id);
+    // Find all orders that contain any of the seller's products
+    const orders = await Order.find({ 'items.productId': { $in: productIds } }).sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch seller orders' });
+  }
+});
+
+// Get seller stats (total sales, total orders, average order value this month)
+router.get('/stats', async (req, res) => {
+  try {
+    const sellerEmail = req.query.email;
+    if (!sellerEmail) return res.status(400).json({ error: 'Seller email is required' });
+    const products = await Product.find({ sellerEmail });
+    const productIds = products.map(p => p.id);
+    // Find all orders for this seller
+    const orders = await Order.find({ 'items.productId': { $in: productIds } });
+    // Total sales amount
+    let totalSalesAmount = 0;
+    let totalOrders = 0;
+    let thisMonthSales = 0;
+    let thisMonthOrders = 0;
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+    orders.forEach(order => {
+      let orderTotal = 0;
+      order.items.forEach(item => {
+        if (productIds.includes(item.productId)) {
+          orderTotal += (item.price || 0) * (item.quantity || 1);
+        }
+      });
+      totalSalesAmount += orderTotal;
+      // Check if order is from this month
+      const orderDate = order.createdAt || order.orderDate;
+      if (orderDate && new Date(orderDate).getMonth() === thisMonth && new Date(orderDate).getFullYear() === thisYear) {
+        thisMonthSales += orderTotal;
+        thisMonthOrders += 1;
+      }
+      totalOrders += 1;
+    });
+    const averageOrderValueThisMonth = thisMonthOrders > 0 ? (thisMonthSales / thisMonthOrders) : 0;
+    res.json({ totalSalesAmount, totalOrders, averageOrderValueThisMonth });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch seller stats' });
+  }
+});
+
+// Get top 3 selling products for a seller
+router.get('/top-products', async (req, res) => {
+  try {
+    const sellerEmail = req.query.email;
+    if (!sellerEmail) return res.status(400).json({ error: 'Seller email is required' });
+    const products = await Product.find({ sellerEmail });
+    const productIds = products.map(p => p.id);
+    // Find all orders for this seller
+    const orders = await Order.find({ 'items.productId': { $in: productIds } });
+    // Aggregate sales by productId
+    const productSales = {};
+    orders.forEach(order => {
+      order.items.forEach(item => {
+        if (productIds.includes(item.productId)) {
+          if (!productSales[item.productId]) {
+            productSales[item.productId] = { quantity: 0, revenue: 0, product: null };
+          }
+          productSales[item.productId].quantity += (item.quantity || 1);
+          productSales[item.productId].revenue += (item.price || 0) * (item.quantity || 1);
+        }
+      });
+    });
+    // Attach product info
+    for (const pid of Object.keys(productSales)) {
+      productSales[pid].product = products.find(p => p.id === pid);
+    }
+    // Sort by quantity sold
+    const topProducts = Object.values(productSales)
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 3);
+    res.json(topProducts);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch top products' });
   }
 });
 

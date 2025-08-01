@@ -22,8 +22,14 @@ const Feedback = () => {
 
         const productResponses = await Promise.all(productRequests);
 
-        const productData = productResponses.map((response) => response.data);
-
+        // Always extract the product object, even if response is an array
+        const productData = productResponses.map((response) => {
+          if (Array.isArray(response.data)) {
+            return response.data[0] || null;
+          }
+          return response.data;
+        });
+        console.log("Fetched productData:", productData);
         setProducts(productData);
       } catch (error) {
         console.error("Error fetching product details:", error);
@@ -47,6 +53,7 @@ const Feedback = () => {
 );
 
         const recentReviewsData = await recentReviewsResponse.json();
+        console.log("DEBUG Frontend: recentReviewsData received:", recentReviewsData);
         setRecentReviews(
           Array.isArray(recentReviewsData) ? recentReviewsData : []
         );
@@ -66,9 +73,13 @@ const Feedback = () => {
       const combined = recentReviews.map((review) => {
         const matchingProduct = products.find(
           (product) =>
-            product.id?.toString() === review.productId?.toString() ||
-            product._id?.toString() === review.productId?.toString()
+            product &&
+            (product.id?.toString() === review.productId?.toString() ||
+             product._id?.toString() === review.productId?.toString())
         );
+        if (!matchingProduct) {
+          console.log("No match for review", review, "in products", products);
+        }
         return {
           ...review,
           product: matchingProduct || null,

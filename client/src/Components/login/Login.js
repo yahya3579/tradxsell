@@ -13,7 +13,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [error, setError] = useState("");
-  const [role, setRole] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
   const { handleLogin } = useContext(AuthContext);
@@ -29,7 +28,7 @@ const Login = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, password, role }),
+          body: JSON.stringify({ email, password }),
           credentials: "include",
         }
       );
@@ -164,20 +163,6 @@ const Login = () => {
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </span>
               </div>
-            </div>
-            <div className="login-form-group">
-              <label className="login-label">ROLE</label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                required
-                className="login-input"
-              >
-                <option value="">Select Role</option>
-                <option value="user">User</option>
-                <option value="MainAdmin">Main Admin</option>
-                <option value="QualityAssurance">Quality Assurance</option>
-              </select>
             </div>
 
             <button type="submit" className="login-continue-button">

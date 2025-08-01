@@ -12,6 +12,7 @@ const productSchema = new mongoose.Schema({
     imageUrl: { type: String },
     latest: { type: Boolean, default: false },
     category: { type: String, required: true },
+    subCategory: { type: String, required: true },
     featured: { type: Boolean, default: false },
     sizes: [String],
     colors: [String],

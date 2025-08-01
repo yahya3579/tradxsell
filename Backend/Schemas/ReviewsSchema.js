@@ -23,6 +23,10 @@ const reviewSchema = new mongoose.Schema({
         required: true,
         min: 1,
         max: 5
+    },
+    sellerEmail: {
+        type: String,
+        required: true
     }
 }, {
     timestamps: true

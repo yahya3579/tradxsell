@@ -5,9 +5,14 @@ import { TrendingUp, Package, DollarSign, CheckCircle, Shield, Star } from 'luci
 import { AuthContext } from '../../AuthContext';
 
 const Dashboard = () => {
-  // Fetch real tags from backend
-  const { id: userId } = useContext(AuthContext);
+  const { id: userId, email: sellerEmail } = useContext(AuthContext);
   const [tags, setTags] = useState([]);
+  const [stats, setStats] = useState({ totalSalesAmount: 0, totalOrders: 0, averageOrderValueThisMonth: 0 });
+  const [topProducts, setTopProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [allOrders, setAllOrders] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [orderIdFilter, setOrderIdFilter] = useState('');
 
   useEffect(() => {
     if (!userId) return;
@@ -21,16 +26,53 @@ const Dashboard = () => {
       });
   }, [userId]);
 
-  const salesData = [
-    { month: 'Jun', value: 1500 },
-    { month: 'Jul', value: 1800 },
-    { month: 'Aug', value: 1600 },
-    { month: 'Sep', value: 2200 },
-    { month: 'Oct', value: 1900 },
-    { month: 'Nov', value: 2100 },
-    { month: 'Dec', value: 1700 },
-    { month: 'Jan', value: 2000 }
+  useEffect(() => {
+    if (!sellerEmail) return;
+    const baseUrl = process.env.REACT_APP_LOCALHOST_URL || 'http://localhost:3001';
+    // Stats
+    fetch(`${baseUrl}/seller/stats?email=${encodeURIComponent(sellerEmail)}`)
+      .then(res => res.json())
+      .then(data => setStats(data));
+    // Top products
+    fetch(`${baseUrl}/seller/top-products?email=${encodeURIComponent(sellerEmail)}`)
+      .then(res => res.json())
+      .then(data => setTopProducts(Array.isArray(data) ? data : []));
+    // Orders
+    fetch(`${baseUrl}/seller/orders?email=${encodeURIComponent(sellerEmail)}`)
+      .then(res => res.json())
+      .then(data => {
+        setAllOrders(Array.isArray(data) ? data : []);
+        setOrders(Array.isArray(data) ? data.slice(0, 10) : []);
+      });
+  }, [sellerEmail]);
+
+  // Filtered orders for modal
+  const filteredAllOrders = orderIdFilter
+    ? allOrders.filter(order => order._id.toLowerCase().includes(orderIdFilter.toLowerCase()))
+    : allOrders;
+
+  // Compute salesData: number of orders per month
+  const monthNames = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
   ];
+  const salesData = React.useMemo(() => {
+    const counts = {};
+    allOrders.forEach(order => {
+      const date = new Date(order.orderDate || order.createdAt);
+      if (isNaN(date)) return;
+      const key = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    // Sort by year and month descending (latest first)
+    const sortedKeys = Object.keys(counts).sort((a, b) => {
+      const [ma, ya] = a.split(' '); const [mb, yb] = b.split(' ');
+      const idxA = monthNames.indexOf(ma), idxB = monthNames.indexOf(mb);
+      if (ya !== yb) return Number(ya) - Number(yb);
+      return idxA - idxB;
+    });
+    return sortedKeys.map(key => ({ month: key, value: counts[key] }));
+  }, [allOrders]);
 
   const styles = {
     container: {
@@ -296,17 +338,12 @@ const Dashboard = () => {
   const SellerBadge = ({ type, icon, label }) => {
     const getBadgeStyle = () => {
       switch(type) {
-        case 'registered':
-          return styles.registeredBadge;
-        case 'verified':
-          return styles.verifiedBadge;
-        case 'gold':
-          return styles.goldBadge;
-        default:
-          return styles.registeredBadge;
+        case 'registered': return styles.registeredBadge;
+        case 'verified': return styles.verifiedBadge;
+        case 'gold': return styles.goldBadge;
+        default: return styles.registeredBadge;
       }
     };
-
     return (
       <div style={{...styles.badge, ...getBadgeStyle()}}>
         {icon}
@@ -325,7 +362,6 @@ const Dashboard = () => {
   // Custom component for hoverable stats card
   const StatsCard = ({ icon, label, value, subtext, isTotal = false }) => {
     const [isHovered, setIsHovered] = React.useState(false);
-    
     const cardStyle = {
       ...styles.statsCard,
       ...(isTotal || isHovered ? styles.totalSalesCard : {
@@ -333,10 +369,8 @@ const Dashboard = () => {
         color: '#333'
       })
     };
-
     const iconColor = isTotal || isHovered ? '#ffffff' : '#666';
     const textColor = isTotal || isHovered ? '#ffffff' : '#333';
-
     return (
       <div 
         style={cardStyle}
@@ -384,30 +418,31 @@ const Dashboard = () => {
             <StatsCard 
               icon={<TrendingUp />}
               label="Total Sales"
-              value="$2,002,332"
-              subtext="+8.1% From last month"
+              value={`$${stats.totalSalesAmount?.toLocaleString()}`}
+              subtext="Total order amount received"
+              isTotal
             />
           </div>
           <div className="col-12 col-md-4">
             <StatsCard 
               icon={<Package />}
               label="Total Orders"
-              value="2,107"
-              subtext="+4.6% From last month"
+              value={stats.totalOrders}
+              subtext="Total orders received"
             />
           </div>
           <div className="col-12 col-md-4">
             <StatsCard 
               icon={<DollarSign />}
               label="Average Order Value"
-              value="$7,201"
-              subtext="+2.4% From last month"
+              value={`$${stats.averageOrderValueThisMonth?.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
+              subtext="This month"
             />
           </div>
         </div>
 
         <div className="row g-4" style={{display: 'flex', alignItems: 'stretch'}}>
-          {/* Sales Chart */}
+          {/* Sales Chart (dummy for now) */}
           <div className="col-12 col-lg-6" style={{display: 'flex'}}>
             <div style={styles.chartCard}>
               <div style={styles.chartHeader}>
@@ -453,54 +488,24 @@ const Dashboard = () => {
                 <h3 style={styles.productTitle}>Top Selling Product</h3>
                 <a href="#" style={styles.seeAllLink}>See All Product</a>
               </div>
-              
-              <div style={styles.productItem}>
-                <img 
-                  src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=150&h=150&fit=crop&crop=center" 
-                  alt="Nike Sports Shoes" 
-                  style={styles.productImage}
-                />
-                <div style={styles.productInfo}>
-                  <div style={styles.productName}>Nike Type Sports Shoes for Men</div>
-                  <div style={styles.productCategory}>Men Shoes</div>
+              {topProducts.length === 0 && <div>No sales yet.</div>}
+              {topProducts.map((item, idx) => (
+                <div style={styles.productItem} key={item.product?.id || idx}>
+                  <img 
+                    src={item.product?.imageUrl ? `${process.env.REACT_APP_LOCALHOST_URL}${item.product.imageUrl}` : 'https://via.placeholder.com/48'}
+                    alt={item.product?.name || 'Product'} 
+                    style={styles.productImage}
+                  />
+                  <div style={styles.productInfo}>
+                    <div style={styles.productName}>{item.product?.name || 'Product'}</div>
+                    <div style={styles.productCategory}>{item.product?.category || ''}</div>
+                  </div>
+                  <div style={styles.productStats}>
+                    <div style={styles.productQuantity}>{item.quantity} sold</div>
+                    <div style={styles.productStatus}>${item.revenue?.toLocaleString()}</div>
+                  </div>
                 </div>
-                <div style={styles.productStats}>
-                  <div style={styles.productQuantity}>Available</div>
-                  <div style={styles.productStatus}>135 stocks Remaining</div>
-                </div>
-              </div>
-
-              <div style={styles.productItem}>
-                <img 
-                  src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=150&h=150&fit=crop&crop=center" 
-                  alt="Samsung Smartphone" 
-                  style={styles.productImage}
-                />
-                <div style={styles.productInfo}>
-                  <div style={styles.productName}>Samsung F23 5G+ Smartphone</div>
-                  <div style={styles.productCategory}>Electronics</div>
-                </div>
-                <div style={styles.productStats}>
-                  <div style={styles.productQuantity}>Available</div>
-                  <div style={styles.productStatus}>76 stocks Remaining</div>
-                </div>
-              </div>
-
-              <div style={styles.productItem}>
-                <img 
-                  src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=150&h=150&fit=crop&crop=center" 
-                  alt="Men's Shirt" 
-                  style={styles.productImage}
-                />
-                <div style={styles.productInfo}>
-                  <div style={styles.productName}>Laptop Fashion Men's Shirt</div>
-                  <div style={styles.productCategory}>Men's Clothing</div>
-                </div>
-                <div style={styles.productStats}>
-                  <div style={styles.productQuantity}>Available</div>
-                  <div style={styles.productStatus}>465 stocks Remaining</div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -510,8 +515,8 @@ const Dashboard = () => {
           <div className="col-12">
             <div style={styles.ordersTable}>
               <div style={styles.productHeader}>
-              <h3 style={styles.tableTitle}>Latest Orders</h3>
-              <a href="#" style={styles.seeAllLink}>See All</a>
+                <h3 style={styles.tableTitle}>Latest Orders</h3>
+                <button style={styles.seeAllLink} onClick={() => setShowModal(true)}>See All</button>
               </div>
               <div className="table-responsive">
                 <table style={styles.table}>
@@ -526,32 +531,78 @@ const Dashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td style={styles.td}>#2861A</td>
-                      <td style={styles.td}>Nike Sportswear</td>
-                      <td style={styles.td}>Jan 12 - 12:23 pm</td>
-                      <td style={styles.td}>$134.00</td>
-                      <td style={styles.td}>COD</td>
-                      <td style={styles.td}>
-                        <span style={styles.statusProcessing}>Processing</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style={styles.td}>#4330F</td>
-                      <td style={styles.td}>Lamp Stand</td>
-                      <td style={styles.td}>May 01 - 01:13 pm</td>
-                      <td style={styles.td}>$23.00</td>
-                      <td style={styles.td}>Credit Card</td>
-                      <td style={styles.td}>
-                        <span style={styles.statusCompleted}>Completed</span>
-                      </td>
-                    </tr>
+                    {orders.length === 0 && (
+                      <tr><td colSpan={6} style={styles.td}>No orders yet.</td></tr>
+                    )}
+                    {orders.map(order => (
+                      order.items.map((item, idx) => (
+                        <tr key={order._id + '-' + idx}>
+                          <td style={styles.td}>{order._id}</td>
+                          <td style={styles.td}>{item.name}</td>
+                          <td style={styles.td}>{new Date(order.orderDate || order.createdAt).toLocaleString()}</td>
+                          <td style={styles.td}>${(item.price * item.quantity).toLocaleString()}</td>
+                          <td style={styles.td}>-</td>
+                          <td style={styles.td}>{item.status}</td>
+                        </tr>
+                      ))
+                    ))}
                   </tbody>
                 </table>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Modal for all orders */}
+        {showModal && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            background: 'rgba(0,0,0,0.3)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }} onClick={() => setShowModal(false)}>
+            <div style={{ background: '#fff', borderRadius: 12, padding: 32, maxWidth: 900, width: '100%', maxHeight: '80vh', overflowY: 'auto', position: 'relative' }} onClick={e => e.stopPropagation()}>
+              <button style={{ position: 'absolute', top: 12, right: 12, fontSize: 22, background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => setShowModal(false)}>&times;</button>
+              <h3 style={{ marginBottom: 16 }}>All Orders</h3>
+              <input
+                type="text"
+                placeholder="Filter by Order ID"
+                value={orderIdFilter}
+                onChange={e => setOrderIdFilter(e.target.value)}
+                style={{ marginBottom: 16, padding: 8, borderRadius: 6, border: '1px solid #ccc', width: 250 }}
+              />
+              <div className="table-responsive">
+                <table style={styles.table}>
+                  <thead style={styles.tableHeader}>
+                    <tr>
+                      <th style={styles.th}>Order ID</th>
+                      <th style={styles.th}>Product</th>
+                      <th style={styles.th}>Order Date</th>
+                      <th style={styles.th}>Price</th>
+                      <th style={styles.th}>Payment</th>
+                      <th style={styles.th}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAllOrders.length === 0 && (
+                      <tr><td colSpan={6} style={styles.td}>No orders found.</td></tr>
+                    )}
+                    {filteredAllOrders.map(order => (
+                      order.items.map((item, idx) => (
+                        <tr key={order._id + '-' + idx}>
+                          <td style={styles.td}>{order._id}</td>
+                          <td style={styles.td}>{item.name}</td>
+                          <td style={styles.td}>{new Date(order.orderDate || order.createdAt).toLocaleString()}</td>
+                          <td style={styles.td}>${(item.price * item.quantity).toLocaleString()}</td>
+                          <td style={styles.td}>-</td>
+                          <td style={styles.td}>{item.status}</td>
+                        </tr>
+                      ))
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

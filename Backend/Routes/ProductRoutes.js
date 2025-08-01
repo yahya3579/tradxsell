@@ -26,6 +26,7 @@ router.post("/", upload.single("image"), async (req, res) => {
     price,
     latest,
     category,
+    subCategory,
     featured,
     sizes,
     colors,
@@ -45,7 +46,11 @@ router.post("/", upload.single("image"), async (req, res) => {
     //     .json({ error: "Product with this id already exists" });
     // }
 
+    if (!subCategory) {
+      return res.status(400).json({ error: "Sub-category is required" });
+    }
     const sanitizedCategory = category.toLowerCase().replace(/\s+/g, "");
+    const sanitizedSubCategory = subCategory.trim();
 
     const newProduct = new Product({
       // id,
@@ -54,6 +59,7 @@ router.post("/", upload.single("image"), async (req, res) => {
       imageUrl,
       latest,
       category: sanitizedCategory,
+      subCategory: sanitizedSubCategory,
       featured,
       sizes: sizes.split(","),
       colors: colors.split(","),
@@ -399,13 +405,19 @@ router.get("/approved/xx", async (req, res) => {
 // (May 20)
 router.get("/category", async (req, res) => {
   const categoryName = req.query.name?.toLowerCase(); // Use query param
+  const subCategory = req.query.subCategory;
 
   if (!categoryName) {
     return res.status(400).json({ error: "Category name is required." });
   }
 
+  const query = { category: categoryName };
+  if (subCategory) {
+    query.subCategory = subCategory;
+  }
+
   try {
-    const products = await Product.find({ category: categoryName });
+    const products = await Product.find(query);
 
     if (products.length === 0) {
       return res
@@ -556,6 +568,24 @@ router.get("/average-rating", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error fetching reviews" });
+  }
+});
+
+// Fetch products by subCategory only
+router.get("/subcategory", async (req, res) => {
+  const subCategory = req.query.name;
+  if (!subCategory) {
+    return res.status(400).json({ error: "Sub-category name is required." });
+  }
+  try {
+    const products = await Product.find({ subCategory: subCategory });
+    if (products.length === 0) {
+      return res.status(404).json({ message: "No products found in this sub-category." });
+    }
+    res.status(200).json(products);
+  } catch (err) {
+    console.error("Error fetching products by sub-category:", err);
+    res.status(500).json({ error: "Failed to fetch products" });
   }
 });
 

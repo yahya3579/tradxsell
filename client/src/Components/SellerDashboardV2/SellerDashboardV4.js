@@ -642,22 +642,6 @@ const SellerDashboardV4 = () => {
             <SlArrowRight style={{ width: "12px", marginLeft: "auto" }} />
           </div>
 
-          <div
-            style={{
-              ...styles.menuItem,
-              ...(getActive("/sellerdashboard/salesdashboard") ? styles.activeMenuItem : {}),
-            }}
-            onClick={() => {
-              navigate("/sellerdashboard/salesdashboard");
-              if (isMobile) setIsSidebarVisible(false);
-            }}
-          >
-            <span style={styles.menuLeft}>
-              <FaChartLine style={{ width: "18px", marginRight: "8px" }} /> Sales Dashboard
-            </span>
-            <SlArrowRight style={{ width: "12px", marginLeft: "auto" }} />
-          </div>
-
 
           <div
             style={{
