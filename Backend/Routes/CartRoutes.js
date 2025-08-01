@@ -32,7 +32,8 @@ app.post('/add', async (req, res) => {
 
         return res.status(201).json({ success: true, message: 'Item added to cart' });
     } catch (err) {
-        return res.status(500).json({ success: false, message: 'Failed to add item to cart' });
+        console.error('Error adding item to cart:', err);
+        return res.status(500).json({ success: false, message: 'Failed to add item to cart', error: err.message });
     }
 });
 
@@ -141,7 +142,7 @@ app.delete('/remove', async (req, res) => {
         }
     } catch (error) {
         console.error('Error removing item:', error);
-        res.status(500).json({ error: 'Failed to remove item from cart' });
+        res.status(500).json({ error: 'Failed to remove item from cart', details: error.message });
     }
 });
 

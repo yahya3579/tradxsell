@@ -115,7 +115,7 @@ function Cart() {
   const removeFromCart = async (productId) => {
   try {
     await axios.delete(
-      `${process.env.REACT_APP_LOCALHOST_URL}/remove`,
+      `${process.env.REACT_APP_LOCALHOST_URL}/cart/remove`,
       {
         params: {
           email: email,       // assuming `email` is available in your component
