@@ -3,6 +3,7 @@ import { AuthContext } from "../../AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { Toaster, toast } from "react-hot-toast";
 import "./login.css"; // Will be creating new login.css file
 import triangle from "../../assets/logosidebar.png";
 import logo from "../../assets/logosid.png";
@@ -20,6 +21,20 @@ const Login = () => {
   const handleLoginValidation = async (event) => {
     event.preventDefault();
 
+    // Show loading toast
+    const loadingToast = toast.loading('Logging in...', {
+      position: "top-center",
+      style: {
+        background: '#2196F3',
+        color: '#fff',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '500',
+        padding: '16px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      },
+    });
+
     try {
       const response = await fetch(
         `${process.env.REACT_APP_LOCALHOST_URL}/users/login`,
@@ -33,6 +48,9 @@ const Login = () => {
         }
       );
       const data = await response.json();
+
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
 
       if (response.ok) {
         setError("");
@@ -50,10 +68,49 @@ const Login = () => {
         if (!allowedRoles.includes(data.user.role)) {
           setError("You are not authorized to log in from this page.");
 
+          // Show error toast
+          toast.error("You are not authorized to log in from this page.", {
+            duration: 4000,
+            position: "top-center",
+            style: {
+              background: '#f44336',
+              color: '#fff',
+              borderRadius: '10px',
+              fontSize: '16px',
+              fontWeight: '500',
+              padding: '16px 20px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            },
+            iconTheme: {
+              primary: '#fff',
+              secondary: '#f44336',
+            },
+          });
+
           setShowAlert(true);
           setTimeout(() => setShowAlert(false), 5000);
           return;
         }
+        
+        // Show success toast
+        toast.success("Login successful! Redirecting...", {
+          duration: 3000,
+          position: "top-center",
+          style: {
+            background: '#4CAF50',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#4CAF50',
+          },
+        });
+
         setSuccessMessage("Login successfully!");
         handleLogin(
           data.user.email,
@@ -71,11 +128,53 @@ const Login = () => {
           window.location.href = "/quality/manageproducts";
         }
       } else {
+        // Show error toast
+        toast.error("Invalid email or password. Please try again.", {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: '#f44336',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#f44336',
+          },
+        });
+
         setShowAlert(true);
         setTimeout(() => setShowAlert(false), 5000);
       }
     } catch (error) {
       console.error("Error logging in:", error);
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show network error toast
+      toast.error("Network error. Please try again later.", {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+
       setShowAlert(true);
       setTimeout(() => setShowAlert(false), 5000);
     }
@@ -90,8 +189,11 @@ const Login = () => {
     console.log("Google login clicked");
   };
 
-  return (
+    return (
     <div className="login-page-container">
+      {/* Toast Container */}
+      <Toaster />
+      
       <div className="login-left-side">
         <div className="login-logo">
           <img src={logo} className="imglogo" />

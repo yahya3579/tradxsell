@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 import "./Reviews.css";
 const Reviews = ({ productId }) => {
   const [reviews, setReviews] = useState([]);
@@ -68,6 +69,20 @@ const Reviews = ({ productId }) => {
     e.preventDefault();
     setError(""); // Reset error message
 
+    // Show loading toast
+    const loadingToast = toast.loading('Submitting your review...', {
+      position: "top-center",
+      style: {
+        background: '#2196F3',
+        color: '#fff',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '500',
+        padding: '16px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      },
+    });
+
     try {
       const newReview = {
         username,
@@ -81,7 +96,30 @@ const Reviews = ({ productId }) => {
         `${process.env.REACT_APP_LOCALHOST_URL}/review/addnew?id=${encodedProductId}`,
         newReview
       );
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
       if (response.data.success) {
+        // Show success toast
+        toast.success("Your review has been successfully submitted!", {
+          duration: 3000,
+          position: "top-center",
+          style: {
+            background: '#4CAF50',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#4CAF50',
+          },
+        });
+
         // Add the new review to the list of reviews
         setReviews((prevReviews) => [...prevReviews, response.data.review]);
         // Reset form fields
@@ -90,10 +128,32 @@ const Reviews = ({ productId }) => {
         setReviewText("");
         setRating(0);
       }
-      alert("Your review has been successfully submitted");
     } catch (err) {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show error toast
+      const errorMessage = err.response?.data?.message || "Error adding review";
+      toast.error(errorMessage, {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+      
       console.error("Error adding review:", err);
-      setError(err.response?.data.message || "Error adding review");
+      setError(errorMessage);
     }
   };
 

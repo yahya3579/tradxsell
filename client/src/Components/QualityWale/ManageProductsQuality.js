@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Form, InputGroup } from "react-bootstrap";
 import { FaSearch } from "react-icons/fa";
+import { toast, Toaster } from "react-hot-toast";
 import ProductDetailsPopup from "../ProductDetailspopup";
 import { Link } from "react-router-dom";
 

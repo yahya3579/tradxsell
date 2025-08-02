@@ -122,8 +122,20 @@ const Footer = () => {
                 &copy; 2024 TradXSell. All rights reserved.
               </p>
               <p className="mt-2">
-              Powered by Techxserve<img src={TechXserve} alt="TechXserve" style={{height:"50px",width:"50px"}} />
-              </p>
+              <a 
+                href="https://techxserve.co" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ 
+                  cursor: 'pointer',
+                  textDecoration: 'none',
+                  color: 'inherit'
+                }}
+              >
+                Powered by Techxserve
+              </a>
+              <img src={TechXserve} alt="TechXserve" style={{height:"50px",width:"50px"}} />
+            </p>
             </Col>
           </Row>
         </Container>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./register.css";
-import { toast } from "react-toastify";
+import { toast, Toaster } from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import side from "../../assets/sidebar-bg.png";
 import triangle from "../../assets/logosidebar.png";
@@ -31,6 +31,20 @@ function Register() {
     event.preventDefault();
     setLoading(true);
 
+    // Show loading toast
+    const loadingToast = toast.loading('Creating your account...', {
+      position: "top-center",
+      style: {
+        background: '#2196F3',
+        color: '#fff',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '500',
+        padding: '16px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      },
+    });
+
     try {
       const response = await fetch(
         `${process.env.REACT_APP_LOCALHOST_URL}/users/addnew`,
@@ -53,7 +67,29 @@ function Register() {
 
       const data = await response.json();
 
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+
       if (response.ok) {
+        // Show success toast
+        toast.success("Registration successful! Please check your email to verify your account.", {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: '#4CAF50',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#4CAF50',
+          },
+        });
+
         setSuccessMessage(
           "You are registered successfully! Please check your email to verify your account."
         );
@@ -63,14 +99,28 @@ function Register() {
           navigate("/login");
         }, 3000);
       } else {
-        // if (data.error) {
-        //   setError(data.error);
-        //   if (data.error.includes("already exists")) {
-        //     setShowResend(true);
-        //   }
-        // }
         if (data.error) {
           setError(data.error);
+          
+          // Show error toast
+          toast.error(data.error, {
+            duration: 4000,
+            position: "top-center",
+            style: {
+              background: '#f44336',
+              color: '#fff',
+              borderRadius: '10px',
+              fontSize: '16px',
+              fontWeight: '500',
+              padding: '16px 20px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            },
+            iconTheme: {
+              primary: '#fff',
+              secondary: '#f44336',
+            },
+          });
+
           if (data.error.includes("not verified")) {
             setShowResend(true);
           } else {
@@ -80,6 +130,29 @@ function Register() {
       }
     } catch (error) {
       console.error("Error registering:", error);
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show network error toast
+      toast.error("Network error. Please try again later.", {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+
       setError("An error occurred. Please try again.");
     } finally {
       setLoading(false); // Hide loading
@@ -88,6 +161,21 @@ function Register() {
 
   const handleResendVerification = async () => {
     setResendLoading(true);
+    
+    // Show loading toast
+    const loadingToast = toast.loading('Sending verification email...', {
+      position: "top-center",
+      style: {
+        background: '#2196F3',
+        color: '#fff',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '500',
+        padding: '16px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      },
+    });
+
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_LOCALHOST_URL}/users/resend-verification`,
@@ -95,12 +183,52 @@ function Register() {
         { withCredentials: true }
       );
 
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+
       if (response.data.message) {
-        toast.success("Verification email resent. Please check your inbox.");
+        // Show success toast
+        toast.success("Verification email resent. Please check your inbox.", {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: '#4CAF50',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#4CAF50',
+          },
+        });
         setShowResend(false);
       }
     } catch (error) {
-      toast.error("Failed to resend verification. Try again later.");
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show error toast
+      toast.error("Failed to resend verification. Try again later.", {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
     } finally {
       setResendLoading(false);
     }
@@ -108,6 +236,9 @@ function Register() {
 
   return (
     <div className="signup-page">
+      {/* Toast Container */}
+      <Toaster />
+      
       {/* Sidebar Section */}
       <div className="login-left-side">
         <div className="login-logo">

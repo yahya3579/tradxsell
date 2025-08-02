@@ -1,193 +1,10 @@
-// import React, { useEffect, useState } from "react";
-// import { useParams, useNavigate } from "react-router-dom";
 
-// const VerifyEmail = () => {
-//   const { token } = useParams();
-//   const [message, setMessage] = useState("");
-//   const navigate = useNavigate();
-
-//   useEffect(() => {
-//     const verifyEmail = async () => {
-//       try {
-//         const response = await fetch(`${process.env.REACT_APP_LOCALHOST_URL}/users/verify-email/${token}`);
-//         const data = await response.json();
-//         if (response.ok) {
-//           setMessage(data.message);
-//           setTimeout(() => {
-//             navigate("/login");
-//           }, 3000);
-//         } else {
-//           setMessage(data.error);
-//         }
-//       } catch (error) {
-//         setMessage("Something went wrong. Please try again.");
-//       }
-//     };
-
-//     verifyEmail();
-//   }, [token, navigate]);
-
-//   return (
-//     <div>
-//       <h2>Email Verification</h2>
-//       <p>{message}</p>
-//     </div>
-//   );
-// };
-
-// export default VerifyEmail;
-
-
-
-// import React, { useEffect, useState } from "react";
-// import { useParams, useNavigate } from "react-router-dom";
-
-// const VerifyEmail = () => {
-//   const { token } = useParams();
-//   const [message, setMessage] = useState("");
-//   const [isSuccess, setIsSuccess] = useState(false);
-//   const navigate = useNavigate();
-
-//   useEffect(() => {
-//     const verifyEmail = async () => {
-//       try {
-//         const response = await fetch(`${process.env.REACT_APP_LOCALHOST_URL}/users/verify-email/${token}`);
-//         const data = await response.json();
-
-//         if (response.ok) {
-//           setMessage(data.message);
-//           setIsSuccess(true);
-//           setTimeout(() => {
-//             navigate("/login");
-//           }, 5000); // Delay redirect by 5 seconds
-//         } else {
-//           setMessage(data.message || "Verification failed.");
-//           setIsSuccess(false);
-//         }
-//       } catch (error) {
-//         setMessage("Something went wrong. Please try again.");
-//         setIsSuccess(false);
-//       }
-//     };
-
-//     verifyEmail();
-//   }, [token, navigate]);
-
-//   return (
-//     <div style={styles.container}>
-//       <h2>Email Verification</h2>
-//       <p style={{ 
-//         ...styles.message, 
-//         color: isSuccess ? "green" : "red" 
-//       }}>
-//         {message}
-//       </p>
-//       {isSuccess && <p>You will be redirected to the login page shortly...</p>}
-//     </div>
-//   );
-// };
-
-// const styles = {
-//   container: {
-//     maxWidth: "500px",
-//     margin: "100px auto",
-//     padding: "20px",
-//     textAlign: "center",
-//     border: "1px solid #ccc",
-//     borderRadius: "8px",
-//     boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-//     backgroundColor: "#fff",
-//     fontFamily: "Arial, sans-serif"
-//   },
-//   message: {
-//     fontSize: "16px",
-//     margin: "20px 0"
-//   }
-// };
-
-// export default VerifyEmail;
-
-
-
-
-
-// import React, { useEffect, useState, useRef } from "react";
-// import { useParams, useNavigate } from "react-router-dom";
-
-// const VerifyEmail = () => {
-//   const { token } = useParams();
-//   const [message, setMessage] = useState("");
-//   const [isSuccess, setIsSuccess] = useState(false);
-//   const navigate = useNavigate();
-//   const hasVerified = useRef(false); // ✅ Prevent multiple API calls
-
-//   useEffect(() => {
-//     const verifyEmail = async () => {
-//       if (hasVerified.current) return; // ✅ Prevent re-verification
-//       hasVerified.current = true;
-
-//       try {
-//         const response = await fetch(`${process.env.REACT_APP_LOCALHOST_URL}/users/verify-email/${token}`);
-//         const data = await response.json();
-
-//         if (response.ok) {
-//           setMessage(data.message);
-//           setIsSuccess(true);
-//           setTimeout(() => {
-//             navigate("/login");
-//           }, 5000);
-//         } else {
-//           // Show error message only if it’s the first response
-//           setMessage(data.message || "Verification failed.");
-//           setIsSuccess(false);
-//         }
-//       } catch (error) {
-//         setMessage("Something went wrong. Please try again.");
-//         setIsSuccess(false);
-//       }
-//     };
-
-//     verifyEmail();
-//   }, [token, navigate]);
-
-//   return (
-//     <div style={styles.container}>
-//       <h2>Email Verification</h2>
-//       <p style={{ 
-//         ...styles.message, 
-//         color: isSuccess ? "green" : "red" 
-//       }}>
-//         {message}
-//       </p>
-//       {isSuccess && <p>You will be redirected to the login page shortly...</p>}
-//     </div>
-//   );
-// };
-
-// const styles = {
-//   container: {
-//     maxWidth: "500px",
-//     margin: "100px auto",
-//     padding: "20px",
-//     textAlign: "center",
-//     border: "1px solid #ccc",
-//     borderRadius: "8px",
-//     boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-//     backgroundColor: "#fff",
-//     fontFamily: "Arial, sans-serif"
-//   },
-//   message: {
-//     fontSize: "16px",
-//     margin: "20px 0"
-//   }
-// };
-
-// export default VerifyEmail;
 
 
 
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { toast, Toaster } from "react-hot-toast";
 
 const VerifyEmail = () => {
   const { token } = useParams();
@@ -201,21 +18,99 @@ const VerifyEmail = () => {
       if (hasVerified.current) return;
       hasVerified.current = true;
 
+      // Show loading toast
+      const loadingToast = toast.loading('Verifying your email...', {
+        position: "top-center",
+        style: {
+          background: '#2196F3',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+      });
+
       try {
         const response = await fetch(`${process.env.REACT_APP_LOCALHOST_URL}/users/verify-email/${token}`);
         const data = await response.json();
 
+        // Dismiss loading toast
+        toast.dismiss(loadingToast);
+
         if (response.ok) {
+          // Show success toast
+          toast.success("Email verified successfully! Redirecting to login...", {
+            duration: 4000,
+            position: "top-center",
+            style: {
+              background: '#4CAF50',
+              color: '#fff',
+              borderRadius: '10px',
+              fontSize: '16px',
+              fontWeight: '500',
+              padding: '16px 20px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            },
+            iconTheme: {
+              primary: '#fff',
+              secondary: '#4CAF50',
+            },
+          });
+
           setMessage(data.message);
           setIsSuccess(true);
           setTimeout(() => {
             navigate("/login");
           }, 5000);
         } else {
-          setMessage(data.message || "Verification failed.");
+          // Show error toast
+          const errorMessage = data.message || "Verification failed.";
+          toast.error(errorMessage, {
+            duration: 4000,
+            position: "top-center",
+            style: {
+              background: '#f44336',
+              color: '#fff',
+              borderRadius: '10px',
+              fontSize: '16px',
+              fontWeight: '500',
+              padding: '16px 20px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            },
+            iconTheme: {
+              primary: '#fff',
+              secondary: '#f44336',
+            },
+          });
+
+          setMessage(errorMessage);
           setIsSuccess(false);
         }
       } catch (error) {
+        // Dismiss loading toast
+        toast.dismiss(loadingToast);
+        
+        // Show network error toast
+        toast.error("Network error. Please try again later.", {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: '#f44336',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#f44336',
+          },
+        });
+
         setMessage("Something went wrong. Please try again.");
         setIsSuccess(false);
       }
@@ -226,6 +121,9 @@ const VerifyEmail = () => {
 
   return (
     <div style={styles.container}>
+      {/* Toast Container */}
+      <Toaster />
+      
       <div style={styles.card}>
         <div style={styles.icon}>
           {isSuccess ? "✅" : "❌"}

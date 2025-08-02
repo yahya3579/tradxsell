@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import { toast, Toaster } from "react-hot-toast";
 import { AuthContext } from '../AuthContext.js';
 import { Table, Badge, Spinner, Form, Button, Alert } from 'react-bootstrap';
 
@@ -43,11 +44,49 @@ export default function UserRFQ() {
     setLoading(true);
     setError(null);
     setSuccess(null);
+
+    // Show loading toast
+    const loadingToast = toast.loading('Submitting your RFQ request...', {
+      position: "top-center",
+      style: {
+        background: '#2196F3',
+        color: '#fff',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '500',
+        padding: '16px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      },
+    });
+
     try {
       const res = await axios.post(`${process.env.REACT_APP_LOCALHOST_URL}/rfq/custom`, {
         ...form,
         user: id
       });
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show success toast
+      toast.success("RFQ submitted successfully! We'll review your request and get back to you soon.", {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#4CAF50',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#4CAF50',
+        },
+      });
+
       setSuccess('RFQ submitted successfully!');
       setForm({
         productName: '',
@@ -60,7 +99,30 @@ export default function UserRFQ() {
         notes: ''
       });
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to submit RFQ');
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show error toast
+      const errorMessage = err.response?.data?.error || 'Failed to submit RFQ';
+      toast.error(errorMessage, {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -68,6 +130,10 @@ export default function UserRFQ() {
 
   return (
     <div className="container py-4">
+      {/* Toast Container */}
+      <Toaster />
+      
+      <h2>Request for Quotation (Custom Product)</h2>
       <h2>Request for Quotation (Custom Product)</h2>
       <Form onSubmit={handleSubmit} className="mb-4">
         <Form.Group className="mb-3">

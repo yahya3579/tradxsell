@@ -13,6 +13,8 @@ const Dashboard = () => {
   const [allOrders, setAllOrders] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [orderIdFilter, setOrderIdFilter] = useState('');
+  const [isVerified, setIsVerified] = useState(false);
+  const [verificationError, setVerificationError] = useState(null);
 
   useEffect(() => {
     if (!userId) return;
@@ -21,8 +23,21 @@ const Dashboard = () => {
       .then(res => res.json())
       .then(data => {
         if (data.seller) {
-          setTags(data.seller.tags || []);
+          const sellerTags = data.seller.tags || [];
+          setTags(sellerTags);
+          
+          // Check if seller has required verification tags
+          const hasRequiredTags = sellerTags.some(tag => 
+            tag === 'registered' || tag === 'verified' || tag === 'gold'
+          );
+          
+          setIsVerified(hasRequiredTags);
+          setVerificationError(hasRequiredTags ? null : 'Your account needs verification to access all features');
         }
+      })
+      .catch(error => {
+        console.error("Error fetching seller profile:", error);
+        setVerificationError('Unable to verify seller status');
       });
   }, [userId]);
 
@@ -391,6 +406,50 @@ const Dashboard = () => {
 
   return (
     <div style={styles.container} className='p-sm-3'>
+      {/* Verification Status Banner */}
+      {!isVerified && verificationError && (
+        <div style={{
+          backgroundColor: '#fff3cd',
+          border: '1px solid #ffeaa7',
+          borderRadius: '8px',
+          padding: '15px',
+          marginBottom: '20px',
+          color: '#856404'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '10px'
+          }}>
+            <div>
+              <strong>⚠️ Account Verification Required</strong>
+              <p style={{ margin: '5px 0 0 0', fontSize: '14px' }}>
+                {verificationError}
+              </p>
+              <p style={{ margin: '5px 0 0 0', fontSize: '14px' }}>
+                Please submit your business documents and wait for admin verification to access all features.
+              </p>
+            </div>
+            <button 
+              style={{
+                backgroundColor: '#ff6b35',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '5px',
+                padding: '8px 16px',
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
+              onClick={() => window.open('/seller/verification', '_blank')}
+            >
+              Submit Documents
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div style={styles.header}>
         <div className="container">

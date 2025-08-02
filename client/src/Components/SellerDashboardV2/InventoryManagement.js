@@ -3,6 +3,7 @@ import styles from "./InventoryManagement.module.css";
 import axios from "axios";
 import { AuthContext } from "../../AuthContext.js";
 import { Link } from "react-router-dom";
+import { Toaster, toast } from "react-hot-toast";
 import { 
   Package, 
   Clock, 
@@ -84,24 +85,132 @@ const InventoryManagement = () => {
 
   const handleDeleteProduct = async (productId) => {
     try {
-      // Show confirmation dialog
-      if (!window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
-        return;
-      }
+      // Show confirmation toast
+      const confirmed = await new Promise((resolve) => {
+        toast((t) => (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '10px'
+          }}>
+            <div style={{
+              fontSize: '16px',
+              fontWeight: '500',
+              color: '#333',
+              textAlign: 'center'
+            }}>
+              Are you sure you want to delete this product? This action cannot be undone.
+            </div>
+            <div style={{
+              display: 'flex',
+              gap: '10px',
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  resolve(true);
+                }}
+                style={{
+                  backgroundColor: '#ef4444',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '5px',
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  resolve(false);
+                }}
+                style={{
+                  backgroundColor: '#6c757d',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '5px',
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ), {
+          duration: 0, // No auto-dismiss
+          position: "top-center",
+          style: {
+            background: '#fff',
+            color: '#333',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            border: '1px solid #e0e0e0',
+            minWidth: '350px'
+          },
+        });
+      });
 
-      await axios.delete(`${process.env.REACT_APP_LOCALHOST_URL}/products?id=${productId}`);
-      
-      // Remove the product from state using both id and _id
-      setproductsInventory(prev => prev.filter(product => 
-        product.id !== productId && product._id !== productId
-      ));
-      
-      // Show success message
-      alert("Product deleted successfully!");
+      if (confirmed) {
+        await axios.delete(`${process.env.REACT_APP_LOCALHOST_URL}/products?id=${productId}`);
+        
+        // Remove the product from state using both id and _id
+        setproductsInventory(prev => prev.filter(product => 
+          product.id !== productId && product._id !== productId
+        ));
+        
+        // Show success toast
+        toast.success("Product deleted successfully!", {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: '#4CAF50',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#4CAF50',
+          },
+        });
+      }
     } catch (err) {
       console.error("Error deleting product:", err);
       setError("Failed to delete product. Please try again.");
-      alert("Failed to delete product. Please try again.");
+      
+      // Show error toast
+      toast.error("Failed to delete product. Please try again.", {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
     }
   };
 
@@ -131,6 +240,9 @@ const InventoryManagement = () => {
 
   return (
     <div style={modernStyles.container}>
+      {/* Toast Container */}
+      <Toaster />
+      
       <div style={modernStyles.content}>
         {/* Header Section */}
         <div style={modernStyles.header}>

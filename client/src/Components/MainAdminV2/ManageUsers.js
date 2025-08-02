@@ -3,6 +3,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Form, InputGroup } from "react-bootstrap";
 import { FaSearch } from "react-icons/fa";
+import { toast, Toaster } from "react-hot-toast";
 import ProductDetailsPopup from "../ProductDetailspopup";
 import { Link, useNavigate } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
@@ -66,19 +67,138 @@ const ManageUsers = () => {
   // };
 
 // (May 20)
-  const handleDelete = async (email) => {
-  try {
-    const encodedEmail = encodeURIComponent(email);
-    await axios.delete(
-      `${process.env.REACT_APP_LOCALHOST_URL}/users/admins?email=${encodedEmail}`
-    );
-    setSellers((prevSellers) =>
-      prevSellers.filter((seller) => seller.email !== email)
-    );
-  } catch (error) {
-    console.error("Error deleting seller:", error);
-  }
-};
+  const handleDelete = async (email, username) => {
+    // Show confirmation dialog
+    const confirmed = await new Promise((resolve) => {
+      toast((t) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span>Are you sure you want to delete user "{username}"?</span>
+          <div style={{ display: 'flex', gap: '5px' }}>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(true);
+              }}
+              style={{
+                background: '#f44336',
+                color: 'white',
+                border: 'none',
+                padding: '5px 10px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px'
+              }}
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(false);
+              }}
+              style={{
+                background: '#666',
+                color: 'white',
+                border: 'none',
+                padding: '5px 10px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px'
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ), {
+        duration: 0,
+        position: "top-center",
+        style: {
+          background: '#fff',
+          color: '#333',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          border: '1px solid #ddd',
+        },
+      });
+    });
+
+    if (!confirmed) return;
+
+    // Show loading toast
+    const loadingToast = toast.loading('Deleting user...', {
+      position: "top-center",
+      style: {
+        background: '#2196F3',
+        color: '#fff',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '500',
+        padding: '16px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      },
+    });
+
+    try {
+      const encodedEmail = encodeURIComponent(email);
+      await axios.delete(
+        `${process.env.REACT_APP_LOCALHOST_URL}/users/admins?email=${encodedEmail}`
+      );
+
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show success toast
+      toast.success("User deleted successfully!", {
+        duration: 3000,
+        position: "top-center",
+        style: {
+          background: '#4CAF50',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#4CAF50',
+        },
+      });
+
+      setSellers((prevSellers) =>
+        prevSellers.filter((seller) => seller.email !== email)
+      );
+    } catch (error) {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show error toast
+      toast.error("Failed to delete user. Please try again.", {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+      
+      console.error("Error deleting seller:", error);
+    }
+  };
 
   const senderId = localStorage.getItem("id");
 
@@ -104,13 +224,16 @@ const ManageUsers = () => {
 
   const handleTagsClick = (seller) => {
     setTagsModalSeller(seller);
-    setTags(seller.tags || []);
+    // Get tags from the seller's data and ensure they are properly set
+    const sellerTags = seller.tags || [];
+    setTags(sellerTags);
     setRole(seller.role || "seller");
     setShowTagsModal(true);
   };
 
   const handleTagsSave = async () => {
     if (!tagsModalSeller) return;
+    
     try {
       await axios.put(
         `${process.env.REACT_APP_LOCALHOST_URL}/seller/admin/update-tags-role`,
@@ -120,6 +243,7 @@ const ManageUsers = () => {
           role,
         }
       );
+
       setSellers((prev) =>
         prev.map((s) =>
           s._id === tagsModalSeller._id ? { ...s, tags, role } : s
@@ -128,6 +252,7 @@ const ManageUsers = () => {
       setShowTagsModal(false);
     } catch (err) {
       alert("Failed to update tags/role");
+      console.error("Failed to update tags/role:", err);
     }
   };
 
@@ -197,6 +322,9 @@ const ManageUsers = () => {
 
   return (
     <div>
+      {/* Toast Container */}
+      <Toaster />
+      
       <style>
         {`
           @media (max-width: 440px) {
@@ -294,7 +422,7 @@ const ManageUsers = () => {
                         </Link>
                         <button
                           className="btn btn-outline-danger btn-sm"
-                          onClick={() => handleDelete(seller.email)}
+                          onClick={() => handleDelete(seller.email, seller.username)}
                         >
                           Delete
                         </button>

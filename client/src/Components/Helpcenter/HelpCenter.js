@@ -1,10 +1,20 @@
 import React, { useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./helpcenter.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 export default function HelpCenter() {
   // State to store search query
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // State for contact form
+  const [contactForm, setContactForm] = useState({
+    fullName: "",
+    email: "",
+    message: ""
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const styles = {
     navbar: {
@@ -112,8 +122,143 @@ export default function HelpCenter() {
     faq.question.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Handle contact form submission
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validate form fields
+    if (!contactForm.fullName.trim() || !contactForm.email.trim() || !contactForm.message.trim()) {
+      toast.error("Please fill in all fields", {
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(contactForm.email)) {
+      toast.error("Please enter a valid email address", {
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    // Show loading toast
+    const loadingToast = toast.loading('Sending your message...', {
+      position: "top-center",
+      style: {
+        background: '#2196F3',
+        color: '#fff',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '500',
+        padding: '16px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      },
+    });
+
+    try {
+      // Simulate API call (replace with actual API endpoint)
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show success toast
+      toast.success("Your message has been sent successfully! We'll get back to you soon.", {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#4CAF50',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#4CAF50',
+        },
+      });
+
+      // Reset form
+      setContactForm({
+        fullName: "",
+        email: "",
+        message: ""
+      });
+    } catch (error) {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show error toast
+      toast.error("Failed to send message. Please try again later.", {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setContactForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   return (
     <div className="help-center">
+      {/* Toast Container */}
+      <ToastContainer />
+      
+      {/* Navbar */}
       {/* Navbar */}
       <nav className="navbar navbar-light" style={styles.navbar}>
         <div className="container d-flex justify-content-center">
@@ -205,35 +350,48 @@ export default function HelpCenter() {
                 {/* Increased padding inside the card */}
                 <h4 className="fw-bold">Got more Questions?</h4>
                 <p className="text-muted">Contact Us</p>
-                <form>
+                <form onSubmit={handleContactSubmit}>
                   <div className="mb-3">
                     <input
                       type="text"
+                      name="fullName"
                       className="form-control"
                       placeholder="Full Name"
+                      value={contactForm.fullName}
+                      onChange={handleInputChange}
+                      required
                     />
                   </div>
                   <div className="mb-3">
                     <input
                       type="email"
+                      name="email"
                       className="form-control"
                       placeholder="Email"
+                      value={contactForm.email}
+                      onChange={handleInputChange}
+                      required
                     />
                   </div>
                   <div className="mb-3">
                     <textarea
+                      name="message"
                       className="form-control"
                       rows="6"
                       placeholder="Your Message"
                       style={styles.textArea}
+                      value={contactForm.message}
+                      onChange={handleInputChange}
+                      required
                     ></textarea>
                   </div>
                   <button
                     type="submit"
                     className="btn w-100 text-white"
                     style={styles.submitButton}
+                    disabled={isSubmitting}
                   >
-                    Send
+                    {isSubmitting ? 'Sending...' : 'Send'}
                   </button>
                 </form>
               </div>

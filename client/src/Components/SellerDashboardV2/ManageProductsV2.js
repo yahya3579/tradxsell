@@ -4,6 +4,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../AuthContext.js";
 import { FaPlus, FaEllipsisV, FaSearch, FaTimes } from "react-icons/fa";
+import { Toaster, toast } from "react-hot-toast";
 import "./ManageProduct.css";
 
 class ManageProducts extends Component {
@@ -12,6 +13,8 @@ class ManageProducts extends Component {
   state = {
     products: [],
     showForm: false,
+    isEditMode: false,
+    editingProduct: null,
     // id: "",
     name: "",
     price: "",
@@ -34,6 +37,9 @@ class ManageProducts extends Component {
     dropdownOpenId: null,
     currentPage: 1,
     itemsPerPage: 10,
+    sellerStatus: null,
+    isVerified: false,
+    verificationError: null,
   };
 
   componentDidMount() {
@@ -42,10 +48,12 @@ class ManageProducts extends Component {
 
     // Check if context is ready before fetching products
     if (this.context && this.context.email) {
+      this.checkSellerVerification();
       this.fetchProducts();
     } else {
       this.contextCheckTimer = setTimeout(() => {
         if (this.context && this.context.email) {
+          this.checkSellerVerification();
           this.fetchProducts();
         } else {
           this.setState({
@@ -66,6 +74,45 @@ class ManageProducts extends Component {
 
   handleResize = () => {
     this.setState({ isMobile: window.innerWidth < 576 });
+  };
+
+  checkSellerVerification = async () => {
+    const { email } = this.context;
+    if (!email) return;
+
+    try {
+      const encodedEmail = encodeURIComponent(email);
+      const response = await axios.get(
+        `${process.env.REACT_APP_LOCALHOST_URL}/seller/profile?userId=${this.context.id}`
+      );
+      
+      if (response.data.seller) {
+        const seller = response.data.seller;
+        const tags = seller.tags || [];
+        
+        // Check if seller has required verification tags
+        const hasRequiredTags = tags.some(tag => 
+          tag === 'registered' || tag === 'verified' || tag === 'gold'
+        );
+        
+        this.setState({
+          sellerStatus: seller,
+          isVerified: hasRequiredTags,
+          verificationError: hasRequiredTags ? null : 'Your account needs verification to add products'
+        });
+      } else {
+        this.setState({
+          isVerified: false,
+          verificationError: 'Seller profile not found. Please contact support.'
+        });
+      }
+    } catch (error) {
+      console.error("Error checking seller verification:", error);
+      this.setState({
+        isVerified: false,
+        verificationError: 'Unable to verify seller status. Please try again.'
+      });
+    }
   };
 
   toggleDropdown = (id) => {
@@ -134,11 +181,29 @@ class ManageProducts extends Component {
       quantity,
       description,
       type: productType,
+      isEditMode,
+      editingProduct,
     } = this.state;
 
     const { email } = this.context;
     if (!email) {
-      alert("Authentication error. Please login again.");
+      toast.error("Authentication error. Please login again.", {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
       return;
     }
 
@@ -146,7 +211,9 @@ class ManageProducts extends Component {
     // formData.append("id", id);
     formData.append("name", name);
     formData.append("price", price);
-    formData.append("image", imageFile);
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
     formData.append("latest", latest);
     formData.append("category", category);
     formData.append("subCategory", subCategory);
@@ -160,17 +227,68 @@ class ManageProducts extends Component {
     formData.append("type", productType);
 
     try {
-      await axios.post(
-        `${process.env.REACT_APP_LOCALHOST_URL}/products`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      if (isEditMode && editingProduct) {
+        // Update existing product
+        await axios.put(
+          `${process.env.REACT_APP_LOCALHOST_URL}/products?id=${editingProduct.id}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
 
-      alert("Product added successfully");
+        // Show success toast for update
+        toast.success("Product updated successfully!", {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: '#4CAF50',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#4CAF50',
+          },
+        });
+      } else {
+        // Add new product
+        await axios.post(
+          `${process.env.REACT_APP_LOCALHOST_URL}/products`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        // Show success toast for addition
+        toast.success("Product added successfully!", {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: '#4CAF50',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#4CAF50',
+          },
+        });
+      }
+
       this.setState({
         // id: "",
         name: "",
@@ -187,31 +305,210 @@ class ManageProducts extends Component {
         description: "",
         type: "local",
         showForm: false,
+        isEditMode: false,
+        editingProduct: null,
       });
       this.fetchProducts();
     } catch (error) {
-      console.error("Error adding product:", error);
-      alert("Failed to add product. Please try again.");
+      console.error("Error saving product:", error);
+      
+      // Show error toast
+      const action = isEditMode ? "update" : "add";
+      toast.error(`Failed to ${action} product. Please try again.`, {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
     }
   };
 
   handleDeleteProduct = async (productId) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
+    // Show confirmation toast
+    const confirmed = await new Promise((resolve) => {
+      toast((t) => (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <div style={{
+            fontSize: '16px',
+            fontWeight: '500',
+            color: '#333',
+            textAlign: 'center'
+          }}>
+            Are you sure you want to delete this product?
+          </div>
+          <div style={{
+            display: 'flex',
+            gap: '10px',
+            justifyContent: 'center'
+          }}>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(true);
+              }}
+              style={{
+                backgroundColor: '#f44336',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '5px',
+                padding: '8px 16px',
+                fontSize: '14px',
+                cursor: 'pointer',
+                fontWeight: '500'
+              }}
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(false);
+              }}
+              style={{
+                backgroundColor: '#6c757d',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '5px',
+                padding: '8px 16px',
+                fontSize: '14px',
+                cursor: 'pointer',
+                fontWeight: '500'
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ), {
+        duration: 0, // No auto-dismiss
+        position: "top-center",
+        style: {
+          background: '#fff',
+          color: '#333',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          border: '1px solid #e0e0e0',
+          minWidth: '300px'
+        },
+      });
+    });
+
+    if (confirmed) {
       try {
         await axios.delete(
           `${process.env.REACT_APP_LOCALHOST_URL}/products?id=${productId}`
         );
         console.log("Product Id", productId);
+        
+        // Show success toast for deletion
+        toast.success("Product deleted successfully!", {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: '#4CAF50',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#4CAF50',
+          },
+        });
+        
         this.fetchProducts();
         this.setState({ dropdownOpenId: null });
       } catch (error) {
         console.error("Error deleting product:", error);
-        alert("Failed to delete product. Please try again.");
+        
+        // Show error toast for deletion
+        toast.error("Failed to delete product. Please try again.", {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: '#f44336',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#f44336',
+          },
+        });
       }
     }
   };
 
   toggleForm = () => {
+    // Check if seller is verified before allowing form to open
+    if (!this.state.isVerified) {
+      toast.error("You need to be verified to add products. Please submit your documents and wait for admin verification.", {
+        duration: 5000,
+        position: "top-center",
+        style: {
+          background: '#ff9800',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#ff9800',
+        },
+      });
+      return;
+    }
+    
+    // Reset form when opening for new product
+    if (!this.state.showForm) {
+      this.setState({
+        isEditMode: false,
+        editingProduct: null,
+        name: "",
+        price: "",
+        imageFile: null,
+        latest: false,
+        category: "",
+        subCategory: "",
+        featured: false,
+        terms: false,
+        sizes: "",
+        colors: "",
+        quantity: "",
+        description: "",
+        type: "local",
+      });
+    }
+    
     this.setState((prevState) => ({
       showForm: !prevState.showForm,
       dropdownOpenId: null,
@@ -234,8 +531,7 @@ class ManageProducts extends Component {
         window.open(`/adminproducts/${product.id}`, "_blank");
         break;
       case "Edit":
-        // You can implement edit functionality here
-        alert(`Edit functionality for ${product.name} - Coming soon!`);
+        this.handleEditProduct(product);
         break;
       case "Delete":
         this.handleDeleteProduct(product.id);
@@ -243,6 +539,28 @@ class ManageProducts extends Component {
       default:
         break;
     }
+  };
+
+  handleEditProduct = (product) => {
+    // Populate form with product data
+    this.setState({
+      isEditMode: true,
+      editingProduct: product,
+      showForm: true,
+      name: product.name || "",
+      price: product.price || "",
+      imageFile: null, // Don't pre-fill image file
+      latest: product.latest || false,
+      category: product.category || "",
+      subCategory: product.subCategory || "",
+      featured: product.featured || false,
+      terms: true, // Always true for edit
+      sizes: product.sizes ? product.sizes.join(", ") : "",
+      colors: product.colors ? product.colors.join(", ") : "",
+      quantity: product.quantity || "",
+      description: product.description || "",
+      type: product.type || "local",
+    });
   };
 
   // Handle items per page change
@@ -320,7 +638,9 @@ getColumnClass = () => {
       isMobile,
       dropdownOpenId,
       currentPage,
-    itemsPerPage,
+      itemsPerPage,
+      isVerified,
+      verificationError,
     } = this.state;
 
     const categories = [
@@ -841,7 +1161,54 @@ getColumnClass = () => {
 
     return (
       <div className="container-fluid">
+        {/* Toast Container */}
+        <Toaster />
+        
         <div style={styles.wrapper}>
+          {/* Verification Status Banner */}
+          {!isVerified && verificationError && (
+            <div style={{
+              backgroundColor: '#fff3cd',
+              border: '1px solid #ffeaa7',
+              borderRadius: '8px',
+              padding: '15px',
+              marginBottom: '20px',
+              color: '#856404'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '10px'
+              }}>
+                <div>
+                  <strong>⚠️ Account Verification Required</strong>
+                  <p style={{ margin: '5px 0 0 0', fontSize: '14px' }}>
+                    {verificationError}
+                  </p>
+                  <p style={{ margin: '5px 0 0 0', fontSize: '14px' }}>
+                    Please submit your business documents and wait for admin verification to add products.
+                  </p>
+                </div>
+                <button 
+                  style={{
+                    backgroundColor: '#ff5722',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '5px',
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => window.open('/seller/verification', '_blank')}
+                >
+                  Submit Documents
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Header with Search, Sort, and Add Button */}
           <div style={styles.header}>
             <div style={styles.searchSortAdd}>
@@ -877,8 +1244,16 @@ getColumnClass = () => {
     </select>
   </div>
             </div>
-            <button style={styles.addBtn} onClick={this.toggleForm}>
-              <FaPlus /> Add New Product
+            <button 
+              style={{
+                ...styles.addBtn,
+                opacity: isVerified ? 1 : 0.5,
+                cursor: isVerified ? 'pointer' : 'not-allowed'
+              }} 
+              onClick={this.toggleForm}
+              disabled={!isVerified}
+            >
+              <FaPlus /> {this.state.isEditMode ? "Edit Product" : "Add New Product"}
             </button>
           </div>
 
@@ -1156,7 +1531,7 @@ getColumnClass = () => {
           >
             <div style={styles.formContainer}>
               <div style={styles.formHeader}>
-                <h3 style={styles.formTitle}>Add New Product</h3>
+                <h3 style={styles.formTitle}>{this.state.isEditMode ? "Edit Product" : "Add New Product"}</h3>
                 <button style={styles.closeButton} onClick={this.toggleForm}>
                   <FaTimes />
                 </button>
@@ -1310,7 +1685,7 @@ getColumnClass = () => {
                 </div>
 
                 <button type="submit" style={styles.submitBtn}>
-                  Add Product
+                  {this.state.isEditMode ? "Update Product" : "Add Product"}
                 </button>
               </form>
             </div>

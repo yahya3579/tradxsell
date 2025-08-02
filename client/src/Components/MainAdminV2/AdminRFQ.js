@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import { Table, Badge, Spinner, Button, Modal, Form, Alert } from 'react-bootstrap';
+import { toast, Toaster } from "react-hot-toast";
 import tradxsell from "../../assets/tradxsell-black.png";
 import { FaUsers, FaUserTie, FaTools, FaCheckCircle } from "react-icons/fa";
 import { MdDashboard, MdInventory } from "react-icons/md";
@@ -190,12 +191,73 @@ export default function AdminRFQ() {
     setLoading(true);
     setError(null);
     setSuccess(null);
+
+    // Show loading toast
+    const loadingToast = toast.loading('Sending quote to user...', {
+      position: "top-center",
+      style: {
+        background: '#2196F3',
+        color: '#fff',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '500',
+        padding: '16px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      },
+    });
+
     try {
       await axios.put(`${process.env.REACT_APP_LOCALHOST_URL}/rfq/custom/admin/${selectedRFQ._id}/respond`, quote);
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show success toast
+      toast.success("Quote sent to user successfully!", {
+        duration: 3000,
+        position: "top-center",
+        style: {
+          background: '#4CAF50',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#4CAF50',
+        },
+      });
+
       setSuccess('Quote sent to user!');
       setSelectedRFQ(null);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to send quote');
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show error toast
+      const errorMessage = err.response?.data?.error || 'Failed to send quote';
+      toast.error(errorMessage, {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -203,6 +265,9 @@ export default function AdminRFQ() {
 
   return (
     <div style={styles.container}>
+      {/* Toast Container */}
+      <Toaster />
+      
       {/* Sidebar */}
       <div style={styles.sidebar}>
         {isMobile && (

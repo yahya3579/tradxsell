@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../../AuthContext.js'; // adjust path as needed
+import { Toaster, toast } from 'react-hot-toast';
 
 const SellerComplainV2 = () => {
   const [complaint, setComplaint] = useState('');
@@ -10,7 +11,23 @@ const SellerComplainV2 = () => {
 
   const handleSubmit = async () => {
     if (!complaint.trim()) {
-      alert('Please enter your complaint before submitting.');
+      toast.error('Please enter your complaint before submitting.', {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
       return;
     }
 
@@ -34,14 +51,71 @@ const SellerComplainV2 = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Complaint submitted successfully!');
+        // Show success toast
+        toast.success('Complaint submitted successfully!', {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: '#4CAF50',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#4CAF50',
+          },
+        });
         setComplaint('');
         setMessage('');
       } else {
-        setMessage(data.message || 'Failed to submit complaint');
+        const errorMessage = data.message || 'Failed to submit complaint';
+        setMessage(errorMessage);
+        
+        // Show error toast
+        toast.error(errorMessage, {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: '#f44336',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#f44336',
+          },
+        });
       }
     } catch (error) {
-      setMessage('Server error. Please try again later.');
+      const errorMessage = 'Server error. Please try again later.';
+      setMessage(errorMessage);
+      
+      // Show error toast
+      toast.error(errorMessage, {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -109,6 +183,9 @@ const SellerComplainV2 = () => {
 
   return (
     <div style={styles.container}>
+      {/* Toast Container */}
+      <Toaster />
+      
       <div style={styles.formCard}>
         <h2 style={styles.title}>Submit a Complaint</h2>
         <div>

@@ -77,6 +77,81 @@ router.post("/", upload.single("image"), async (req, res) => {
   }
 });
 
+// Update product route
+router.put("/", upload.single("image"), async (req, res) => {
+  const { 
+    name,
+    price,
+    latest,
+    category,
+    subCategory,
+    featured,
+    sizes,
+    colors,
+    quantity,
+    description,
+    type,
+  } = req.body;
+  const productId = req.query.id;
+  const sellerEmail = req.body.sellerEmail;
+
+  if (!productId) {
+    return res.status(400).json({ error: "Product ID is required" });
+  }
+
+  try {
+    // Find the product first
+    const existingProduct = await Product.findOne({ id: productId });
+    
+    if (!existingProduct) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    // Check if the seller owns this product
+    if (existingProduct.sellerEmail !== sellerEmail) {
+      return res.status(403).json({ error: "You can only edit your own products" });
+    }
+
+    if (!subCategory) {
+      return res.status(400).json({ error: "Sub-category is required" });
+    }
+
+    const sanitizedCategory = category.toLowerCase().replace(/\s+/g, "");
+    const sanitizedSubCategory = subCategory.trim();
+
+    // Prepare update data
+    const updateData = {
+      name,
+      price,
+      latest,
+      category: sanitizedCategory,
+      subCategory: sanitizedSubCategory,
+      featured,
+      sizes: sizes ? sizes.split(",") : [],
+      colors: colors ? colors.split(",") : [],
+      quantity,
+      description,
+      type,
+    };
+
+    // Only update image if a new one is uploaded
+    if (req.file) {
+      updateData.imageUrl = `/uploads/images/${req.file.filename}`;
+    }
+
+    const updatedProduct = await Product.findOneAndUpdate(
+      { id: productId },
+      updateData,
+      { new: true }
+    );
+
+    return res.status(200).json(updatedProduct);
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return res.status(500).json({ error: "Error updating product" });
+  }
+});
+
 router.use(
   "/uploads/images",
   express.static(path.join(__dirname, "../uploads/images"))

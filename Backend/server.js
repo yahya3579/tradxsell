@@ -14,11 +14,13 @@ app.use(
     origin: [
       "http://localhost:3000", // local frontend
       "https://tradxsell.com", // production
-      "https://www.tradxsell.com"
+      "https://www.tradxsell.com",
+      "https://apiback.tradxsell.com" // backend domain
     ],
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     credentials: true,
-    allowedHeaders: ['Content-Type'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 200
   })
 );
 // Handle preflight requests
@@ -102,7 +104,27 @@ io.on("connection", (socket) => {
 });
 
 app.get("/", (req, res) => {
-  res.json("TradXSell App");
+  res.setHeader('Content-Type', 'application/json');
+  res.json({ message: "TradXSell App", status: "running" });
+});
+
+// Health check endpoint for cPanel
+app.get("/health", (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.setHeader('Content-Type', 'application/json');
+  res.status(500).json({ error: 'Something went wrong!' });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.status(404).json({ error: 'Route not found' });
 });
 
 // Start the server with Socket.IO support

@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { AuthContext } from "../../AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { Toaster, toast } from "react-hot-toast";
 import "./login.css"; // Reuse styling
 import triangle from "../../assets/logosidebar.png";
 import logo from "../../assets/logosid.png";
@@ -19,6 +20,20 @@ const SellerLogin = () => {
   const handleLoginValidation = async (event) => {
     event.preventDefault();
 
+    // Show loading toast
+    const loadingToast = toast.loading('Logging in as seller...', {
+      position: "top-center",
+      style: {
+        background: '#2196F3',
+        color: '#fff',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '500',
+        padding: '16px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      },
+    });
+
     try {
       const response = await fetch(
         `${process.env.REACT_APP_LOCALHOST_URL}/users/login`,
@@ -34,13 +49,55 @@ const SellerLogin = () => {
 
       const data = await response.json();
 
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+
       if (response.ok && data.success) {
         if (data.user.role !== "seller") {
           setError("You are not authorized to log in as a seller.");
+          
+          // Show error toast
+          toast.error("You are not authorized to log in as a seller.", {
+            duration: 4000,
+            position: "top-center",
+            style: {
+              background: '#f44336',
+              color: '#fff',
+              borderRadius: '10px',
+              fontSize: '16px',
+              fontWeight: '500',
+              padding: '16px 20px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            },
+            iconTheme: {
+              primary: '#fff',
+              secondary: '#f44336',
+            },
+          });
+
           setShowAlert(true);
           setTimeout(() => setShowAlert(false), 4000);
           return;
         }
+
+        // Show success toast
+        toast.success("Seller login successful! Redirecting...", {
+          duration: 3000,
+          position: "top-center",
+          style: {
+            background: '#4CAF50',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#4CAF50',
+          },
+        });
 
         setSuccessMessage("Login successfully!");
         handleLogin(
@@ -54,19 +111,66 @@ const SellerLogin = () => {
         // window.location.href = "/admin/sellerdashboard";
         window.location.href = "/sellerdashboard";
       } else {
-        setError(data.error || "Invalid credentials");
+        const errorMessage = data.error || "Invalid credentials";
+        setError(errorMessage);
+        
+        // Show error toast
+        toast.error(errorMessage, {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: '#f44336',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#f44336',
+          },
+        });
+
         setShowAlert(true);
         setTimeout(() => setShowAlert(false), 4000);
       }
     } catch (error) {
       console.error("Login error:", error);
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show network error toast
+      toast.error("Network error. Please try again later.", {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+
       setShowAlert(true);
       setTimeout(() => setShowAlert(false), 4000);
     }
   };
 
-  return (
+    return (
     <div className="login-page-container">
+      {/* Toast Container */}
+      <Toaster />
+      
       <div className="login-left-side">
         <div className="login-logo"><img src={logo} className="imglogo" /></div>
         <div className="login-tagline">Seller Portal – Login to manage your store!</div>

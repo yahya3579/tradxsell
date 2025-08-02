@@ -6,6 +6,7 @@ import styles from "./AccountSetting.module.css";
 import { X, Camera } from "lucide-react";
 import { AuthContext } from "../../AuthContext";
 import { Badge } from "react-bootstrap";
+import { Toaster, toast } from "react-hot-toast";
 
 export default function AccountSetting() {
   const { id: userId } = useContext(AuthContext);
@@ -96,6 +97,21 @@ export default function AccountSetting() {
   // --- SUBMIT HANDLER ---
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Show loading toast
+    const loadingToast = toast.loading('Saving changes...', {
+      position: "top-center",
+      style: {
+        background: '#2196F3',
+        color: '#fff',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '500',
+        padding: '16px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      },
+    });
+
     const formData = new FormData();
 
     formData.append('userId', userId);
@@ -140,19 +156,81 @@ export default function AccountSetting() {
         body: formData,
       });
       const data = await response.json();
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
       if (response.ok) {
-        alert('Seller profile updated successfully!');
+        // Show success toast
+        toast.success('Profile updated successfully!', {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: '#4CAF50',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#4CAF50',
+          },
+        });
         // Optionally, re-fetch the profile to update the form
       } else {
-        alert('Error: ' + (data.error || 'Unknown error'));
+        const errorMessage = data.error || 'Unknown error occurred';
+        // Show error toast
+        toast.error(`Error: ${errorMessage}`, {
+          duration: 4000,
+          position: "top-center",
+          style: {
+            background: '#f44336',
+            color: '#fff',
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: '500',
+            padding: '16px 20px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          },
+          iconTheme: {
+            primary: '#fff',
+            secondary: '#f44336',
+          },
+        });
       }
     } catch (err) {
-      alert('Network error: ' + err.message);
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show network error toast
+      toast.error(`Network error: ${err.message}`, {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
     }
   };
 
   return (
     <>
+      {/* Toast Container */}
+      <Toaster />
+      
       {/* <div className="container-fluid m-0 p-0 navbar-dark bg-dark shadow">
         <FullNavbar />
       </div> */}

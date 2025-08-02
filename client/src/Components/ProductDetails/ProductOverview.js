@@ -165,7 +165,23 @@ export default function ProductOverview() {
   const handleAddToCart = async () => {
     if(!senderId){
       navigate('/login');
+      return;
     }
+
+    // Show loading toast
+    const loadingToast = toast.loading('Adding product to cart...', {
+      position: "top-center",
+      style: {
+        background: '#2196F3',
+        color: '#fff',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '500',
+        padding: '16px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      },
+    });
+
     const itemData = {
       email,
       username,
@@ -183,13 +199,56 @@ export default function ProductOverview() {
         `${process.env.REACT_APP_LOCALHOST_URL}/cart/add`,
         itemData
       );
-      toast.success("Product added to cart!");
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show success toast
+      toast.success("Product added to cart successfully!", {
+        duration: 3000,
+        position: "top-center",
+        style: {
+          background: '#4CAF50',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#4CAF50',
+        },
+      });
     } catch (error) {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show error toast
+      const errorMessage = error.response?.data?.error || "Failed to add product to cart!";
+      toast.error(errorMessage, {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+      
       console.error(
         "Error adding item to cart:",
         error.response ? error.response.data : error.message
       );
-      toast.error("Failed to add product to cart!");
     }
   };
 

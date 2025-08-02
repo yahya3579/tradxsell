@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Form, InputGroup } from "react-bootstrap";
 import { FaSearch } from "react-icons/fa";
+import { toast, Toaster } from "react-hot-toast";
 import ProductDetailsPopup from "../ProductDetailspopup";
 import { Link } from "react-router-dom";
 
@@ -53,26 +54,146 @@ const ManageProducts = () => {
   // };
 
 
-  const handleStatusChange = async (id, currentStatus) => {
-  const newStatus = currentStatus === "approved" ? "not approved" : "approved";
-  try {
-    await axios.patch(
-      `${process.env.REACT_APP_LOCALHOST_URL}/products/updatestatus?id=${id}`,
-      { status: newStatus }
-    );
-    if (newStatus === "not approved") {
-      setRemarksProduct(products.find((product) => product._id === id));
-    } else {
-      setProducts((prevProducts) =>
-        prevProducts.map((product) =>
-          product._id === id ? { ...product, status: newStatus } : product
-        )
+  const handleStatusChange = async (id, currentStatus, productName) => {
+    const newStatus = currentStatus === "approved" ? "not approved" : "approved";
+    
+    // Show confirmation dialog
+    const confirmed = await new Promise((resolve) => {
+      toast((t) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span>Are you sure you want to change the status of "{productName}" to "{newStatus}"?</span>
+          <div style={{ display: 'flex', gap: '5px' }}>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(true);
+              }}
+              style={{
+                background: '#2196F3',
+                color: 'white',
+                border: 'none',
+                padding: '5px 10px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px'
+              }}
+            >
+              Change
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(false);
+              }}
+              style={{
+                background: '#666',
+                color: 'white',
+                border: 'none',
+                padding: '5px 10px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px'
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ), {
+        duration: 0,
+        position: "top-center",
+        style: {
+          background: '#fff',
+          color: '#333',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          border: '1px solid #ddd',
+        },
+      });
+    });
+
+    if (!confirmed) return;
+
+    // Show loading toast
+    const loadingToast = toast.loading('Updating product status...', {
+      position: "top-center",
+      style: {
+        background: '#2196F3',
+        color: '#fff',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '500',
+        padding: '16px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      },
+    });
+
+    try {
+      await axios.patch(
+        `${process.env.REACT_APP_LOCALHOST_URL}/products/updatestatus?id=${id}`,
+        { status: newStatus }
       );
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show success toast
+      toast.success(`Product status changed to "${newStatus}" successfully!`, {
+        duration: 3000,
+        position: "top-center",
+        style: {
+          background: '#4CAF50',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#4CAF50',
+        },
+      });
+
+      if (newStatus === "not approved") {
+        setRemarksProduct(products.find((product) => product._id === id));
+      } else {
+        setProducts((prevProducts) =>
+          prevProducts.map((product) =>
+            product._id === id ? { ...product, status: newStatus } : product
+          )
+        );
+      }
+    } catch (error) {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show error toast
+      toast.error("Failed to update product status. Please try again.", {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+      
+      console.error("Error updating product status:", error);
     }
-  } catch (error) {
-    console.error("Error updating product status:", error);
-  }
-};
+  };
 
 
 
@@ -140,26 +261,137 @@ const ManageProducts = () => {
   //   }
   // };
 
-  const handleDeleteProduct = async (productId) => {
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this product?"
-  );
-  if (!confirmDelete) return;
-
-  try {
-    await axios.delete(`${process.env.REACT_APP_LOCALHOST_URL}/products`, {
-      params: { id: productId },
+  const handleDeleteProduct = async (productId, productName) => {
+    // Show confirmation dialog
+    const confirmed = await new Promise((resolve) => {
+      toast((t) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span>Are you sure you want to delete "{productName}"?</span>
+          <div style={{ display: 'flex', gap: '5px' }}>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(true);
+              }}
+              style={{
+                background: '#f44336',
+                color: 'white',
+                border: 'none',
+                padding: '5px 10px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px'
+              }}
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(false);
+              }}
+              style={{
+                background: '#666',
+                color: 'white',
+                border: 'none',
+                padding: '5px 10px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px'
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ), {
+        duration: 0,
+        position: "top-center",
+        style: {
+          background: '#fff',
+          color: '#333',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          border: '1px solid #ddd',
+        },
+      });
     });
 
-    setProducts((prevProducts) =>
-      prevProducts.filter((product) => product._id !== productId)
-    );
-  } catch (error) {
-    console.error("Error deleting product:", error);
-    alert("There was an error deleting the product. Please try again.");
-    window.location.reload();
-  }
-};
+    if (!confirmed) return;
+
+    // Show loading toast
+    const loadingToast = toast.loading('Deleting product...', {
+      position: "top-center",
+      style: {
+        background: '#2196F3',
+        color: '#fff',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '500',
+        padding: '16px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      },
+    });
+
+    try {
+      await axios.delete(`${process.env.REACT_APP_LOCALHOST_URL}/products`, {
+        params: { id: productId },
+      });
+
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show success toast
+      toast.success("Product deleted successfully!", {
+        duration: 3000,
+        position: "top-center",
+        style: {
+          background: '#4CAF50',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#4CAF50',
+        },
+      });
+
+      setProducts((prevProducts) =>
+        prevProducts.filter((product) => product._id !== productId)
+      );
+    } catch (error) {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show error toast
+      toast.error("Failed to delete product. Please try again.", {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+      
+      console.error("Error deleting product:", error);
+    }
+  };
 
 
   const handleDetailsClick = (product) => {
@@ -242,8 +474,11 @@ const ManageProducts = () => {
     },
   };
 
-  return (
+    return (
     <div>
+      {/* Toast Container */}
+      <Toaster />
+      
       <style>
         {`
         @media (max-width: 776px) {
@@ -420,7 +655,7 @@ const ManageProducts = () => {
                         <button
                           className="btn btn-outline-warning btn-sm"
                           onClick={() =>
-                            handleStatusChange(product._id, product.status)
+                            handleStatusChange(product._id, product.status, product.name)
                           }
                           style={{width: "115px"}}
                         >
@@ -434,7 +669,7 @@ const ManageProducts = () => {
                         </Link>
                         <button
                           className="btn btn-outline-danger btn-sm"
-                          onClick={() => handleDeleteProduct(product.id)} 
+                          onClick={() => handleDeleteProduct(product.id, product.name)} 
                         >
                           Delete
                         </button>

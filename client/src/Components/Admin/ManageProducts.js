@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../AuthContext.js";
+import { toast, Toaster } from "react-hot-toast";
 import SideNavbar from "./SideNavbar";
 import "./ManageProduct.css";
 
@@ -65,6 +66,20 @@ class ManageProducts extends Component {
     } = this.state;
     const { email } = this.context;
 
+    // Show loading toast
+    const loadingToast = toast.loading('Adding product...', {
+      position: "top-center",
+      style: {
+        background: '#2196F3',
+        color: '#fff',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '500',
+        padding: '16px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      },
+    });
+
     const formData = new FormData();
     formData.append("id", id);
     formData.append("name", name);
@@ -80,33 +95,199 @@ class ManageProducts extends Component {
     formData.append("sellerEmail", email);
     formData.append("type", productType);
 
-    await axios.post(`${process.env.REACT_APP_LOCALHOST_URL}/products`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
+    try {
+      await axios.post(`${process.env.REACT_APP_LOCALHOST_URL}/products`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+
+      // Show success toast
+      toast.success("Product added successfully!", {
+        duration: 3000,
+        position: "top-center",
+        style: {
+          background: '#4CAF50',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#4CAF50',
+        },
+      });
+
+      this.setState({
+        id: "",
+        name: "",
+        price: "",
+        imageFile: null,
+        latest: false,
+        category: "",
+        featured: false,
+        sizes: "",
+        colors: "",
+        quantity: "",
+        description: "",
+        type: "local",
+      });
+      this.fetchProducts();
+    } catch (error) {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show error toast
+      toast.error("Failed to add product. Please try again.", {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+    }
+  };
+
+  handleDeleteProduct = async (productId, productName) => {
+    // Show confirmation dialog
+    const confirmed = await new Promise((resolve) => {
+      toast((t) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span>Are you sure you want to delete "{productName}"?</span>
+          <div style={{ display: 'flex', gap: '5px' }}>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(true);
+              }}
+              style={{
+                background: '#f44336',
+                color: 'white',
+                border: 'none',
+                padding: '5px 10px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px'
+              }}
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                resolve(false);
+              }}
+              style={{
+                background: '#666',
+                color: 'white',
+                border: 'none',
+                padding: '5px 10px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px'
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ), {
+        duration: 0,
+        position: "top-center",
+        style: {
+          background: '#fff',
+          color: '#333',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          border: '1px solid #ddd',
+        },
+      });
+    });
+
+    if (!confirmed) return;
+
+    // Show loading toast
+    const loadingToast = toast.loading('Deleting product...', {
+      position: "top-center",
+      style: {
+        background: '#2196F3',
+        color: '#fff',
+        borderRadius: '10px',
+        fontSize: '16px',
+        fontWeight: '500',
+        padding: '16px 20px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
       },
     });
 
-    alert("Product added successfully");
-    this.setState({
-      id: "",
-      name: "",
-      price: "",
-      imageFile: null,
-      latest: false,
-      category: "",
-      featured: false,
-      sizes: "",
-      colors: "",
-      quantity: "",
-      description: "",
-      type: "local",
-    });
-    this.fetchProducts();
-  };
-
-  handleDeleteProduct = async (productId) => {
-    await axios.delete(`${process.env.REACT_APP_LOCALHOST_URL}/products/product/${productId}`);
-    this.fetchProducts();
+    try {
+      await axios.delete(`${process.env.REACT_APP_LOCALHOST_URL}/products/product/${productId}`);
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show success toast
+      toast.success("Product deleted successfully!", {
+        duration: 3000,
+        position: "top-center",
+        style: {
+          background: '#4CAF50',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#4CAF50',
+        },
+      });
+      
+      this.fetchProducts();
+    } catch (error) {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      // Show error toast
+      toast.error("Failed to delete product. Please try again.", {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+    }
   };
 
   toggleForm = () => {
@@ -173,6 +354,9 @@ class ManageProducts extends Component {
 
     return (
       <div className="ManageProducts">
+        {/* Toast Container */}
+        <Toaster />
+        
         <SideNavbar />
         <main style={{ flex: 1, padding: "20px" }}>
           <header
@@ -406,7 +590,7 @@ class ManageProducts extends Component {
                     </Link>
                     <button
                       style={styles.deleteButton}
-                      onClick={() => this.handleDeleteProduct(product.id)}
+                      onClick={() => this.handleDeleteProduct(product.id, product.name)}
                     >
                       Delete
                     </button>
