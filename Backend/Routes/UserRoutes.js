@@ -49,11 +49,128 @@ app.post('/addnew', async (req, res) => {
           to: newUser.email,
           subject: 'Please verify your email',
           html: `
-            <h1>Email Verification</h1>
-            <p>Hello ${newUser.username},</p>
-            <p>Please verify your email by clicking the link below:</p>
-            <a href="${verificationUrl}">Verify Email</a>
-            <p>This link will expire in 5 minutes.</p>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Email Verification - Tradxsell</title>
+                <style>
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        margin: 0;
+                        padding: 0;
+                        background-color: #f5f5f5;
+                    }
+                    .email-container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        background-color: #ffffff;
+                        border-radius: 10px;
+                        overflow: hidden;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    }
+                    .header {
+                        background: linear-gradient(135deg, #EF5B2B 0%, #ff6b35 100%);
+                        padding: 30px 20px;
+                        text-align: center;
+                        color: white;
+                    }
+                    .logo {
+                        font-size: 28px;
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                    }
+                    .header-subtitle {
+                        font-size: 16px;
+                        opacity: 0.9;
+                        margin: 0;
+                    }
+                    .content {
+                        padding: 40px 30px;
+                        text-align: center;
+                    }
+                    .welcome-text {
+                        font-size: 24px;
+                        color: #333;
+                        margin-bottom: 20px;
+                        font-weight: 600;
+                    }
+                    .description {
+                        font-size: 16px;
+                        color: #666;
+                        line-height: 1.6;
+                        margin-bottom: 30px;
+                    }
+                    .verify-button {
+                        display: inline-block;
+                        background: linear-gradient(135deg, #EF5B2B 0%, #ff6b35 100%);
+                        color: white;
+                        text-decoration: none;
+                        padding: 15px 30px;
+                        border-radius: 25px;
+                        font-size: 16px;
+                        font-weight: 600;
+                        margin: 20px 0;
+                        box-shadow: 0 4px 15px rgba(239, 91, 43, 0.3);
+                        transition: all 0.3s ease;
+                    }
+                    .verify-button:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(239, 91, 43, 0.4);
+                    }
+                    .footer {
+                        background-color: #f8f9fa;
+                        padding: 20px;
+                        text-align: center;
+                        color: #666;
+                        font-size: 14px;
+                    }
+                    .warning {
+                        background-color: #fff3cd;
+                        border: 1px solid #ffeaa7;
+                        border-radius: 5px;
+                        padding: 15px;
+                        margin: 20px 0;
+                        color: #856404;
+                        font-size: 14px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <div class="logo">🏪 Tradxsell</div>
+                        <p class="header-subtitle">Your Trusted E-commerce Platform</p>
+                    </div>
+                    
+                    <div class="content">
+                        <h1 class="welcome-text">Welcome to Tradxsell, ${newUser.username}!</h1>
+                        <p class="description">
+                            Thank you for joining our community! To complete your registration and start exploring our marketplace, 
+                            please verify your email address by clicking the button below.
+                        </p>
+                        
+                        <a href="${verificationUrl}" class="verify-button">
+                            ✅ Verify Email Address
+                        </a>
+                        
+                        <div class="warning">
+                            ⏰ This verification link will expire in 5 minutes for security reasons.
+                        </div>
+                        
+                        <p class="description">
+                            If you didn't create an account with Tradxsell, you can safely ignore this email.
+                        </p>
+                    </div>
+                    
+                    <div class="footer">
+                        <p>© 2024 Tradxsell. All rights reserved.</p>
+                        <p>This email was sent to ${newUser.email}</p>
+                    </div>
+                </div>
+            </body>
+            </html>
           `
         });
         console.log('Verification email sent successfully');
@@ -145,11 +262,128 @@ app.post('/resend-verification', async (req, res) => {
           to: user.email,
           subject: 'Please verify your email',
           html: `
-              <h1>Email Verification</h1>
-              <p>Hello ${user.username},</p>
-              <p>Please verify your email by clicking the link below:</p>
-              <a href="${verificationUrl}">Verify Email</a>
-              <p>This link will expire in 5 minutes.</p>
+              <!DOCTYPE html>
+              <html>
+              <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>Email Verification - Tradxsell</title>
+                  <style>
+                      body {
+                          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                          margin: 0;
+                          padding: 0;
+                          background-color: #f5f5f5;
+                      }
+                      .email-container {
+                          max-width: 600px;
+                          margin: 0 auto;
+                          background-color: #ffffff;
+                          border-radius: 10px;
+                          overflow: hidden;
+                          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                      }
+                      .header {
+                          background: linear-gradient(135deg, #EF5B2B 0%, #ff6b35 100%);
+                          padding: 30px 20px;
+                          text-align: center;
+                          color: white;
+                      }
+                      .logo {
+                          font-size: 28px;
+                          font-weight: bold;
+                          margin-bottom: 10px;
+                      }
+                      .header-subtitle {
+                          font-size: 16px;
+                          opacity: 0.9;
+                          margin: 0;
+                      }
+                      .content {
+                          padding: 40px 30px;
+                          text-align: center;
+                      }
+                      .welcome-text {
+                          font-size: 24px;
+                          color: #333;
+                          margin-bottom: 20px;
+                          font-weight: 600;
+                      }
+                      .description {
+                          font-size: 16px;
+                          color: #666;
+                          line-height: 1.6;
+                          margin-bottom: 30px;
+                      }
+                      .verify-button {
+                          display: inline-block;
+                          background: linear-gradient(135deg, #EF5B2B 0%, #ff6b35 100%);
+                          color: white;
+                          text-decoration: none;
+                          padding: 15px 30px;
+                          border-radius: 25px;
+                          font-size: 16px;
+                          font-weight: 600;
+                          margin: 20px 0;
+                          box-shadow: 0 4px 15px rgba(239, 91, 43, 0.3);
+                          transition: all 0.3s ease;
+                      }
+                      .verify-button:hover {
+                          transform: translateY(-2px);
+                          box-shadow: 0 6px 20px rgba(239, 91, 43, 0.4);
+                      }
+                      .footer {
+                          background-color: #f8f9fa;
+                          padding: 20px;
+                          text-align: center;
+                          color: #666;
+                          font-size: 14px;
+                      }
+                      .warning {
+                          background-color: #fff3cd;
+                          border: 1px solid #ffeaa7;
+                          border-radius: 5px;
+                          padding: 15px;
+                          margin: 20px 0;
+                          color: #856404;
+                          font-size: 14px;
+                      }
+                  </style>
+              </head>
+              <body>
+                  <div class="email-container">
+                      <div class="header">
+                          <div class="logo">🏪 Tradxsell</div>
+                          <p class="header-subtitle">Your Trusted E-commerce Platform</p>
+                      </div>
+                      
+                      <div class="content">
+                          <h1 class="welcome-text">Email Verification Required</h1>
+                          <p class="description">
+                              Hello ${user.username}! We noticed you haven't verified your email address yet. 
+                              To access your Tradxsell account and start shopping, please verify your email by clicking the button below.
+                          </p>
+                          
+                          <a href="${verificationUrl}" class="verify-button">
+                              ✅ Verify Email Address
+                          </a>
+                          
+                          <div class="warning">
+                              ⏰ This verification link will expire in 5 minutes for security reasons.
+                          </div>
+                          
+                          <p class="description">
+                              If you didn't request this email, you can safely ignore it.
+                          </p>
+                      </div>
+                      
+                      <div class="footer">
+                          <p>© 2024 Tradxsell. All rights reserved.</p>
+                          <p>This email was sent to ${user.email}</p>
+                      </div>
+                  </div>
+              </body>
+              </html>
           `
       });
 
