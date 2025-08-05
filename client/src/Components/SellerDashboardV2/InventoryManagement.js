@@ -23,6 +23,8 @@ const InventoryManagement = () => {
   const [productsInventory, setproductsInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedProductDetails, setSelectedProductDetails] = useState(null);
+  const [showProductDetailsPopup, setShowProductDetailsPopup] = useState(false);
 
   // (Before May 20)
   // useEffect(() => {
@@ -214,6 +216,16 @@ const InventoryManagement = () => {
     }
   };
 
+  const handleViewProductDetails = (product) => {
+    setSelectedProductDetails(product);
+    setShowProductDetailsPopup(true);
+  };
+
+  const closeProductDetailsPopup = () => {
+    setSelectedProductDetails(null);
+    setShowProductDetailsPopup(false);
+  };
+
   if (error) {
     return (
       <div style={modernStyles.container}>
@@ -399,13 +411,13 @@ const InventoryManagement = () => {
                         </div>
 
                         <div style={modernStyles.productActions}>
-                          <Link
-                            to={`/adminproducts/${product._id || product.id}`}
+                          <button
+                            onClick={() => handleViewProductDetails(product)}
                             style={modernStyles.viewButton}
                           >
                             <Eye size={14} />
                             View Details
-                          </Link>
+                          </button>
                           <button
                             style={modernStyles.deleteButton}
                             onClick={() => handleDeleteProduct(product._id || product.id)}
@@ -480,13 +492,13 @@ const InventoryManagement = () => {
                         </div>
 
                         <div style={modernStyles.productActions}>
-                          <Link
-                            to={`/adminproducts/${product._id || product.id}`}
+                          <button
+                            onClick={() => handleViewProductDetails(product)}
                             style={modernStyles.viewButton}
                           >
                             <Eye size={14} />
                             View Details
-                          </Link>
+                          </button>
                           <button
                             style={modernStyles.deleteButton}
                             onClick={() => handleDeleteProduct(product._id || product.id)}
@@ -561,13 +573,13 @@ const InventoryManagement = () => {
                         </div>
 
                         <div style={modernStyles.productActions}>
-                          <Link
-                            to={`/adminproducts/${product._id || product.id}`}
+                          <button
+                            onClick={() => handleViewProductDetails(product)}
                             style={modernStyles.viewButton}
                           >
                             <Eye size={14} />
                             View Details
-                          </Link>
+                          </button>
                           <button
                             style={modernStyles.deleteButton}
                             onClick={() => handleDeleteProduct(product._id || product.id)}
@@ -585,6 +597,273 @@ const InventoryManagement = () => {
           )}
         </div>
       </div>
+
+      {/* Product Details Popup */}
+      {showProductDetailsPopup && selectedProductDetails && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: "20px",
+          }}
+          onClick={closeProductDetailsPopup}
+        >
+          <div style={{
+            backgroundColor: "#fff",
+            borderRadius: "15px",
+            padding: "30px",
+            maxWidth: "800px",
+            width: "100%",
+            maxHeight: "90vh",
+            overflowY: "auto",
+            position: "relative",
+          }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "20px",
+            }}>
+              <h3 style={{
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                color: "#f2582c",
+                margin: 0,
+              }}>
+                Product Details
+              </h3>
+              <button
+                onClick={closeProductDetailsPopup}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "24px",
+                  cursor: "pointer",
+                  color: "#999",
+                  padding: "0",
+                  width: "30px",
+                  height: "30px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div style={{ padding: "20px" }}>
+              {/* Product Image */}
+              <div style={{ 
+                textAlign: 'center', 
+                marginBottom: '20px',
+                backgroundColor: '#f8f9fa',
+                borderRadius: '8px',
+                padding: '20px'
+              }}>
+                <img
+                  src={`${process.env.REACT_APP_LOCALHOST_URL}${selectedProductDetails.imageUrl}`}
+                  alt={selectedProductDetails.name}
+                  style={{
+                    maxWidth: '300px',
+                    maxHeight: '300px',
+                    objectFit: 'contain',
+                    borderRadius: '8px',
+                    border: '2px solid #f2582c'
+                  }}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='0.35em' fill='%23999' font-family='Arial, sans-serif' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E";
+                  }}
+                />
+              </div>
+
+              {/* Product Information */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div>
+                  <h4 style={{ 
+                    marginBottom: "15px", 
+                    color: "#f2582c",
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold'
+                  }}>
+                    {selectedProductDetails.name}
+                  </h4>
+                  
+                  <div style={{ marginBottom: '15px' }}>
+                    <strong style={{ color: '#333' }}>Price:</strong>
+                    <span style={{ 
+                      color: '#f2582c', 
+                      fontSize: '1.2rem', 
+                      fontWeight: 'bold',
+                      marginLeft: '10px'
+                    }}>
+                      USD {selectedProductDetails.price}
+                    </span>
+                  </div>
+
+                  <div style={{ marginBottom: '10px' }}>
+                    <strong style={{ color: '#333' }}>Category:</strong>
+                    <span style={{ marginLeft: '10px', color: '#666' }}>
+                      {selectedProductDetails.category}
+                    </span>
+                  </div>
+
+                  <div style={{ marginBottom: '10px' }}>
+                    <strong style={{ color: '#333' }}>Sub-Category:</strong>
+                    <span style={{ marginLeft: '10px', color: '#666' }}>
+                      {selectedProductDetails.subCategory || 'N/A'}
+                    </span>
+                  </div>
+
+                  <div style={{ marginBottom: '10px' }}>
+                    <strong style={{ color: '#333' }}>Type:</strong>
+                    <span style={{ 
+                      marginLeft: '10px', 
+                      color: selectedProductDetails.type === 'international' ? '#28a745' : '#007bff',
+                      fontWeight: 'bold'
+                    }}>
+                      {selectedProductDetails.type}
+                    </span>
+                  </div>
+
+                  <div style={{ marginBottom: '10px' }}>
+                    <strong style={{ color: '#333' }}>Quantity:</strong>
+                    <span style={{ marginLeft: '10px', color: '#666' }}>
+                      {selectedProductDetails.quantity}
+                    </span>
+                  </div>
+
+                  <div style={{ marginBottom: '10px' }}>
+                    <strong style={{ color: '#333' }}>Product ID:</strong>
+                    <span style={{ marginLeft: '10px', color: '#666' }}>
+                      {selectedProductDetails.id || selectedProductDetails._id}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ marginBottom: '10px' }}>
+                    <strong style={{ color: '#333' }}>Status:</strong>
+                    <span style={{ 
+                      marginLeft: '10px',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      backgroundColor: selectedProductDetails.status === 'approved' ? '#28a745' :
+                                     selectedProductDetails.status === 'pending' ? '#ffc107' : '#dc3545',
+                      color: '#fff'
+                    }}>
+                      {selectedProductDetails.status ? 
+                        selectedProductDetails.status.charAt(0).toUpperCase() + selectedProductDetails.status.slice(1) : 
+                        'Unknown'
+                      }
+                    </span>
+                  </div>
+
+                  <div style={{ marginBottom: '10px' }}>
+                    <strong style={{ color: '#333' }}>Seller Email:</strong>
+                    <span style={{ marginLeft: '10px', color: '#666' }}>
+                      {selectedProductDetails.sellerEmail}
+                    </span>
+                  </div>
+
+                  <div style={{ marginBottom: '10px' }}>
+                    <strong style={{ color: '#333' }}>Created:</strong>
+                    <span style={{ marginLeft: '10px', color: '#666' }}>
+                      {new Date(selectedProductDetails.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  <div style={{ marginBottom: '10px' }}>
+                    <strong style={{ color: '#333' }}>Updated:</strong>
+                    <span style={{ marginLeft: '10px', color: '#666' }}>
+                      {new Date(selectedProductDetails.updatedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  {selectedProductDetails.sizes && selectedProductDetails.sizes.length > 0 && (
+                    <div style={{ marginBottom: '10px' }}>
+                      <strong style={{ color: '#333' }}>Sizes:</strong>
+                      <span style={{ marginLeft: '10px', color: '#666' }}>
+                        {selectedProductDetails.sizes.join(", ")}
+                      </span>
+                    </div>
+                  )}
+
+                  {selectedProductDetails.colors && selectedProductDetails.colors.length > 0 && (
+                    <div style={{ marginBottom: '10px' }}>
+                      <strong style={{ color: '#333' }}>Colors:</strong>
+                      <span style={{ marginLeft: '10px', color: '#666' }}>
+                        {selectedProductDetails.colors.join(", ")}
+                      </span>
+                    </div>
+                  )}
+
+                  <div style={{ marginBottom: '10px' }}>
+                    <strong style={{ color: '#333' }}>Features:</strong>
+                    <div style={{ marginLeft: '10px', marginTop: '5px' }}>
+                      {selectedProductDetails.latest && (
+                        <span style={{ 
+                          display: 'inline-block',
+                          backgroundColor: '#17a2b8',
+                          color: '#fff',
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          marginRight: '5px',
+                          marginBottom: '5px'
+                        }}>
+                          Latest
+                        </span>
+                      )}
+                      {selectedProductDetails.featured && (
+                        <span style={{ 
+                          display: 'inline-block',
+                          backgroundColor: '#ffc107',
+                          color: '#000',
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          marginRight: '5px',
+                          marginBottom: '5px'
+                        }}>
+                          Featured
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div style={{ marginTop: '20px' }}>
+                <strong style={{ color: '#333', display: 'block', marginBottom: '10px' }}>
+                  Description:
+                </strong>
+                <div style={{ 
+                  backgroundColor: '#f8f9fa',
+                  padding: '15px',
+                  borderRadius: '8px',
+                  color: '#666',
+                  lineHeight: '1.6'
+                }}>
+                  {selectedProductDetails.description}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

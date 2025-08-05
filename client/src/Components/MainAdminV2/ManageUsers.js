@@ -18,6 +18,8 @@ const ManageUsers = () => {
   const [tagsModalSeller, setTagsModalSeller] = useState(null);
   const [tags, setTags] = useState([]);
   const [role, setRole] = useState("");
+  const [sellerProfile, setSellerProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
 
   const navigate = useNavigate();
 
@@ -44,12 +46,34 @@ const ManageUsers = () => {
   const indexOfFirstSeller = indexOfLastSeller - sellersPerPage;
   const currentSellers = filteredSellers.slice(indexOfFirstSeller, indexOfLastSeller);
 
-  const handleDetailsClick = (seller) => {
+  const handleDetailsClick = async (seller) => {
     setSelectedSeller(seller);
+    
+    // If the user is a seller, fetch their profile details
+    if (seller.role === 'seller') {
+      setLoadingProfile(true);
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_LOCALHOST_URL}/seller/profile?userId=${seller._id}`
+        );
+        if (response.data.seller) {
+          setSellerProfile(response.data.seller);
+        }
+      } catch (error) {
+        console.error('Error fetching seller profile:', error);
+        setSellerProfile(null);
+      } finally {
+        setLoadingProfile(false);
+      }
+    } else {
+      setSellerProfile(null);
+    }
   };
 
   const handleClosePopup = () => {
     setSelectedSeller(null);
+    setSellerProfile(null);
+    setLoadingProfile(false);
   };
 
   // (Before May 20)
@@ -486,11 +510,299 @@ const ManageUsers = () => {
 
         {selectedSeller && (
           <div style={styles.popup}>
-            <div style={styles.popupContent}>
-              <h2 style={{ marginBottom: "20px" }}>{selectedSeller.username}'s Details</h2>
-              <p>Email: {selectedSeller.email}</p>
-              <p>Address: {selectedSeller.address}</p>
-              <p>Phone Number: {selectedSeller.phoneNumber}</p>
+            <div style={{
+              ...styles.popupContent,
+              width: '90%',
+              maxWidth: '800px',
+              maxHeight: '90vh',
+              overflowY: 'auto'
+            }}>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h2 style={{ marginBottom: "0", color: "#EF5B2B" }}>
+                  {selectedSeller.username}'s Details
+                </h2>
+                <button 
+                  onClick={handleClosePopup} 
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#fff',
+                    fontSize: '24px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Basic User Information */}
+              <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#333', borderRadius: '8px' }}>
+                <h4 style={{ color: '#EF5B2B', marginBottom: '15px' }}>Basic Information</h4>
+                <div className="row">
+                  <div className="col-md-6">
+                    <p><strong>Username:</strong> {selectedSeller.username}</p>
+                    <p><strong>Email:</strong> {selectedSeller.email}</p>
+                    <p><strong>Role:</strong> 
+                      <span style={{ 
+                        backgroundColor: roleColors[selectedSeller.role] || '#666',
+                        color: '#fff',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        marginLeft: '8px',
+                        fontSize: '12px'
+                      }}>
+                        {selectedSeller.role}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="col-md-6">
+                    <p><strong>Address:</strong> {selectedSeller.address || 'Not provided'}</p>
+                    <p><strong>Phone:</strong> {selectedSeller.phoneNumber || 'Not provided'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Seller Profile Information */}
+              {selectedSeller.role === 'seller' && (
+                <div style={{ marginBottom: '20px' }}>
+                  {loadingProfile ? (
+                    <div style={{ textAlign: 'center', padding: '20px' }}>
+                      <div className="spinner-border text-light" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                      <p style={{ marginTop: '10px' }}>Loading seller profile...</p>
+                    </div>
+                  ) : sellerProfile ? (
+                    <>
+                      {/* Company Information */}
+                      <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#333', borderRadius: '8px' }}>
+                        <h4 style={{ color: '#EF5B2B', marginBottom: '15px' }}>Company Information</h4>
+                        <div className="row">
+                          <div className="col-md-6">
+                            <p><strong>Company Name:</strong> {sellerProfile.companyName || 'Not provided'}</p>
+                            <p><strong>Business Type:</strong> {sellerProfile.businessType || 'Not provided'}</p>
+                            <p><strong>Monthly Sales:</strong> {sellerProfile.monthlySales || 'Not provided'}</p>
+                          </div>
+                          <div className="col-md-6">
+                            <p><strong>Office Address:</strong> {sellerProfile.officeAddress || 'Not provided'}</p>
+                            <p><strong>Warehouse Address:</strong> {sellerProfile.warehouseAddress || 'Not provided'}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Description and Bio */}
+                      <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#333', borderRadius: '8px' }}>
+                        <h4 style={{ color: '#EF5B2B', marginBottom: '15px' }}>About</h4>
+                        <div style={{ marginBottom: '15px' }}>
+                          <p><strong>Description:</strong></p>
+                          <p style={{ 
+                            backgroundColor: '#444', 
+                            padding: '10px', 
+                            borderRadius: '4px',
+                            marginBottom: '0'
+                          }}>
+                            {sellerProfile.description || 'Not provided'}
+                          </p>
+                        </div>
+                        <div>
+                          <p><strong>Bio:</strong></p>
+                          <p style={{ 
+                            backgroundColor: '#444', 
+                            padding: '10px', 
+                            borderRadius: '4px',
+                            marginBottom: '0'
+                          }}>
+                            {sellerProfile.bio || 'Not provided'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Social Links */}
+                      {sellerProfile.socialLinks && (
+                        <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#333', borderRadius: '8px' }}>
+                          <h4 style={{ color: '#EF5B2B', marginBottom: '15px' }}>Social Media Links</h4>
+                          <div className="row">
+                            <div className="col-md-4">
+                              <p><strong>Facebook:</strong></p>
+                              <a href={sellerProfile.socialLinks.facebook} target="_blank" rel="noopener noreferrer" 
+                                 style={{ color: '#EF5B2B', wordBreak: 'break-all' }}>
+                                {sellerProfile.socialLinks.facebook || 'Not provided'}
+                              </a>
+                            </div>
+                            <div className="col-md-4">
+                              <p><strong>Instagram:</strong></p>
+                              <a href={sellerProfile.socialLinks.instagram} target="_blank" rel="noopener noreferrer"
+                                 style={{ color: '#EF5B2B', wordBreak: 'break-all' }}>
+                                {sellerProfile.socialLinks.instagram || 'Not provided'}
+                              </a>
+                            </div>
+                            <div className="col-md-4">
+                              <p><strong>LinkedIn:</strong></p>
+                              <a href={sellerProfile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer"
+                                 style={{ color: '#EF5B2B', wordBreak: 'break-all' }}>
+                                {sellerProfile.socialLinks.linkedin || 'Not provided'}
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Profile Image */}
+                      {sellerProfile.profileImageUrl && (
+                        <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#333', borderRadius: '8px' }}>
+                          <h4 style={{ color: '#EF5B2B', marginBottom: '15px' }}>Profile Image</h4>
+                          <img 
+                            src={sellerProfile.profileImageUrl} 
+                            alt="Profile" 
+                            style={{ 
+                              maxWidth: '200px', 
+                              maxHeight: '200px', 
+                              borderRadius: '8px',
+                              border: '2px solid #EF5B2B'
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      {/* Legal Documents */}
+                      {sellerProfile.legalDocuments && sellerProfile.legalDocuments.length > 0 && (
+                        <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#333', borderRadius: '8px' }}>
+                          <h4 style={{ color: '#EF5B2B', marginBottom: '15px' }}>Legal Documents ({sellerProfile.legalDocuments.length})</h4>
+                          <div className="d-flex flex-wrap gap-2">
+                            {sellerProfile.legalDocuments.map((doc, idx) => (
+                              <div key={idx} style={{ position: 'relative' }}>
+                                {doc.type === 'application/pdf' ? (
+                                  <div style={{
+                                    width: '80px',
+                                    height: '80px',
+                                    backgroundColor: '#444',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    border: '1px solid #555'
+                                  }} onClick={() => window.open(doc.url, '_blank')}>
+                                    <span style={{ color: '#EF5B2B', fontWeight: 'bold' }}>PDF</span>
+                                  </div>
+                                ) : (
+                                  <img 
+                                    src={doc.url} 
+                                    alt={`Legal doc ${idx + 1}`}
+                                    style={{
+                                      width: '80px',
+                                      height: '80px',
+                                      objectFit: 'cover',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer',
+                                      border: '1px solid #555'
+                                    }}
+                                    onClick={() => window.open(doc.url, '_blank')}
+                                  />
+                                )}
+                                <small style={{ 
+                                  display: 'block', 
+                                  textAlign: 'center', 
+                                  marginTop: '4px',
+                                  color: '#ccc',
+                                  fontSize: '10px'
+                                }}>
+                                  {doc.name}
+                                </small>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* CNIC Documents */}
+                      {sellerProfile.cnicDocuments && sellerProfile.cnicDocuments.length > 0 && (
+                        <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#333', borderRadius: '8px' }}>
+                          <h4 style={{ color: '#EF5B2B', marginBottom: '15px' }}>CNIC Documents ({sellerProfile.cnicDocuments.length})</h4>
+                          <div className="d-flex flex-wrap gap-2">
+                            {sellerProfile.cnicDocuments.map((doc, idx) => (
+                              <div key={idx} style={{ position: 'relative' }}>
+                                {doc.type === 'application/pdf' ? (
+                                  <div style={{
+                                    width: '80px',
+                                    height: '80px',
+                                    backgroundColor: '#444',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    border: '1px solid #555'
+                                  }} onClick={() => window.open(doc.url, '_blank')}>
+                                    <span style={{ color: '#EF5B2B', fontWeight: 'bold' }}>PDF</span>
+                                  </div>
+                                ) : (
+                                  <img 
+                                    src={doc.url} 
+                                    alt={`CNIC doc ${idx + 1}`}
+                                    style={{
+                                      width: '80px',
+                                      height: '80px',
+                                      objectFit: 'cover',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer',
+                                      border: '1px solid #555'
+                                    }}
+                                    onClick={() => window.open(doc.url, '_blank')}
+                                  />
+                                )}
+                                <small style={{ 
+                                  display: 'block', 
+                                  textAlign: 'center', 
+                                  marginTop: '4px',
+                                  color: '#ccc',
+                                  fontSize: '10px'
+                                }}>
+                                  {doc.name}
+                                </small>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Tags */}
+                      {sellerProfile.tags && sellerProfile.tags.length > 0 && (
+                        <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#333', borderRadius: '8px' }}>
+                          <h4 style={{ color: '#EF5B2B', marginBottom: '15px' }}>Tags</h4>
+                          <div className="d-flex flex-wrap gap-2">
+                            {sellerProfile.tags.map((tag) => (
+                              <span key={tag} style={{
+                                backgroundColor: tag === 'verified' ? '#28a745' : 
+                                             tag === 'registered' ? '#6c757d' : 
+                                             tag === 'gold' ? '#ffc107' : '#6c757d',
+                                color: '#fff',
+                                padding: '4px 8px',
+                                borderRadius: '12px',
+                                fontSize: '12px',
+                                fontWeight: 'bold'
+                              }}>
+                                {tag === 'verified' ? '✔ Verified' : 
+                                 tag.charAt(0).toUpperCase() + tag.slice(1)}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div style={{ 
+                      textAlign: 'center', 
+                      padding: '20px', 
+                      backgroundColor: '#333', 
+                      borderRadius: '8px' 
+                    }}>
+                      <p>No seller profile found for this user.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <button onClick={handleClosePopup} style={styles.closeButton}>
                 Close
               </button>

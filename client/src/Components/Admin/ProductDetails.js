@@ -51,7 +51,7 @@ function ProductDetails() {
 }, [id]);
 
     const handleBackToDashboard = () => {
-        navigate('/admin/manageproduct');
+        navigate('/admin/manageproducts');
     };
 
     if (error) {

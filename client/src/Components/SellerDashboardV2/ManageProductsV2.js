@@ -40,6 +40,8 @@ class ManageProducts extends Component {
     sellerStatus: null,
     isVerified: false,
     verificationError: null,
+    selectedProductDetails: null,
+    showProductDetailsPopup: false,
   };
 
   componentDidMount() {
@@ -532,7 +534,7 @@ class ManageProducts extends Component {
 
     switch (action) {
       case "View Details":
-        window.open(`/adminproducts/${product.id}`, "_blank");
+        this.handleViewProductDetails(product);
         break;
       case "Edit":
         this.handleEditProduct(product);
@@ -564,6 +566,20 @@ class ManageProducts extends Component {
       quantity: product.quantity || "",
       description: product.description || "",
       type: product.type || "local",
+    });
+  };
+
+  handleViewProductDetails = (product) => {
+    this.setState({
+      selectedProductDetails: product,
+      showProductDetailsPopup: true,
+    });
+  };
+
+  closeProductDetailsPopup = () => {
+    this.setState({
+      selectedProductDetails: null,
+      showProductDetailsPopup: false,
     });
   };
 
@@ -645,6 +661,8 @@ getColumnClass = () => {
       itemsPerPage,
       isVerified,
       verificationError,
+      selectedProductDetails,
+      showProductDetailsPopup,
     } = this.state;
 
     const categories = [
@@ -1692,6 +1710,231 @@ getColumnClass = () => {
                   {this.state.isEditMode ? "Update Product" : "Add Product"}
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Product Details Popup */}
+        {showProductDetailsPopup && selectedProductDetails && (
+          <div
+            style={styles.formOverlay}
+            onClick={this.closeProductDetailsPopup}
+          >
+            <div style={{
+              ...styles.formContainer,
+              maxWidth: '800px',
+              maxHeight: '90vh',
+              overflowY: 'auto'
+            }}>
+              <div style={styles.formHeader}>
+                <h3 style={styles.formTitle}>Product Details</h3>
+                <button style={styles.closeButton} onClick={this.closeProductDetailsPopup}>
+                  <FaTimes />
+                </button>
+              </div>
+              
+              <div style={{ padding: "20px" }}>
+                {/* Product Image */}
+                <div style={{ 
+                  textAlign: 'center', 
+                  marginBottom: '20px',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '8px',
+                  padding: '20px'
+                }}>
+                  <img
+                    src={`${process.env.REACT_APP_LOCALHOST_URL}${selectedProductDetails.imageUrl}`}
+                    alt={selectedProductDetails.name}
+                    style={{
+                      maxWidth: '300px',
+                      maxHeight: '300px',
+                      objectFit: 'contain',
+                      borderRadius: '8px',
+                      border: '2px solid #fb5420'
+                    }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='0.35em' fill='%23999' font-family='Arial, sans-serif' font-size='16'%3ENo Image%3C/text%3E%3C/svg%3E";
+                    }}
+                  />
+                </div>
+
+                {/* Product Information */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                  <div>
+                    <h4 style={{ 
+                      marginBottom: "15px", 
+                      color: "#fb5420",
+                      fontSize: '1.5rem',
+                      fontWeight: 'bold'
+                    }}>
+                      {selectedProductDetails.name}
+                    </h4>
+                    
+                    <div style={{ marginBottom: '15px' }}>
+                      <strong style={{ color: '#333' }}>Price:</strong>
+                      <span style={{ 
+                        color: '#fb5420', 
+                        fontSize: '1.2rem', 
+                        fontWeight: 'bold',
+                        marginLeft: '10px'
+                      }}>
+                        USD {selectedProductDetails.price}
+                      </span>
+                    </div>
+
+                    <div style={{ marginBottom: '10px' }}>
+                      <strong style={{ color: '#333' }}>Category:</strong>
+                      <span style={{ marginLeft: '10px', color: '#666' }}>
+                        {selectedProductDetails.category}
+                      </span>
+                    </div>
+
+                    <div style={{ marginBottom: '10px' }}>
+                      <strong style={{ color: '#333' }}>Sub-Category:</strong>
+                      <span style={{ marginLeft: '10px', color: '#666' }}>
+                        {selectedProductDetails.subCategory || 'N/A'}
+                      </span>
+                    </div>
+
+                    <div style={{ marginBottom: '10px' }}>
+                      <strong style={{ color: '#333' }}>Type:</strong>
+                      <span style={{ 
+                        marginLeft: '10px', 
+                        color: selectedProductDetails.type === 'international' ? '#28a745' : '#007bff',
+                        fontWeight: 'bold'
+                      }}>
+                        {selectedProductDetails.type}
+                      </span>
+                    </div>
+
+                    <div style={{ marginBottom: '10px' }}>
+                      <strong style={{ color: '#333' }}>Quantity:</strong>
+                      <span style={{ marginLeft: '10px', color: '#666' }}>
+                        {selectedProductDetails.quantity}
+                      </span>
+                    </div>
+
+                    <div style={{ marginBottom: '10px' }}>
+                      <strong style={{ color: '#333' }}>Product ID:</strong>
+                      <span style={{ marginLeft: '10px', color: '#666' }}>
+                        {selectedProductDetails.id}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style={{ marginBottom: '10px' }}>
+                      <strong style={{ color: '#333' }}>Status:</strong>
+                      <span style={{ 
+                        marginLeft: '10px',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        backgroundColor: selectedProductDetails.status === 'approved' ? '#28a745' :
+                                       selectedProductDetails.status === 'not approved' ? '#dc3545' :
+                                       selectedProductDetails.status === 'pending' ? '#ffc107' : '#6c757d',
+                        color: '#fff'
+                      }}>
+                        {selectedProductDetails.status ? 
+                          selectedProductDetails.status.charAt(0).toUpperCase() + selectedProductDetails.status.slice(1) : 
+                          'Unknown'
+                        }
+                      </span>
+                    </div>
+
+                    <div style={{ marginBottom: '10px' }}>
+                      <strong style={{ color: '#333' }}>Seller Email:</strong>
+                      <span style={{ marginLeft: '10px', color: '#666' }}>
+                        {selectedProductDetails.sellerEmail}
+                      </span>
+                    </div>
+
+                    <div style={{ marginBottom: '10px' }}>
+                      <strong style={{ color: '#333' }}>Created:</strong>
+                      <span style={{ marginLeft: '10px', color: '#666' }}>
+                        {new Date(selectedProductDetails.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    <div style={{ marginBottom: '10px' }}>
+                      <strong style={{ color: '#333' }}>Updated:</strong>
+                      <span style={{ marginLeft: '10px', color: '#666' }}>
+                        {new Date(selectedProductDetails.updatedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    {selectedProductDetails.sizes && selectedProductDetails.sizes.length > 0 && (
+                      <div style={{ marginBottom: '10px' }}>
+                        <strong style={{ color: '#333' }}>Sizes:</strong>
+                        <span style={{ marginLeft: '10px', color: '#666' }}>
+                          {selectedProductDetails.sizes.join(", ")}
+                        </span>
+                      </div>
+                    )}
+
+                    {selectedProductDetails.colors && selectedProductDetails.colors.length > 0 && (
+                      <div style={{ marginBottom: '10px' }}>
+                        <strong style={{ color: '#333' }}>Colors:</strong>
+                        <span style={{ marginLeft: '10px', color: '#666' }}>
+                          {selectedProductDetails.colors.join(", ")}
+                        </span>
+                      </div>
+                    )}
+
+                    <div style={{ marginBottom: '10px' }}>
+                      <strong style={{ color: '#333' }}>Features:</strong>
+                      <div style={{ marginLeft: '10px', marginTop: '5px' }}>
+                        {selectedProductDetails.latest && (
+                          <span style={{ 
+                            display: 'inline-block',
+                            backgroundColor: '#17a2b8',
+                            color: '#fff',
+                            padding: '2px 8px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            marginRight: '5px',
+                            marginBottom: '5px'
+                          }}>
+                            Latest
+                          </span>
+                        )}
+                        {selectedProductDetails.featured && (
+                          <span style={{ 
+                            display: 'inline-block',
+                            backgroundColor: '#ffc107',
+                            color: '#000',
+                            padding: '2px 8px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            marginRight: '5px',
+                            marginBottom: '5px'
+                          }}>
+                            Featured
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div style={{ marginTop: '20px' }}>
+                  <strong style={{ color: '#333', display: 'block', marginBottom: '10px' }}>
+                    Description:
+                  </strong>
+                  <div style={{ 
+                    backgroundColor: '#f8f9fa',
+                    padding: '15px',
+                    borderRadius: '8px',
+                    color: '#666',
+                    lineHeight: '1.6'
+                  }}>
+                    {selectedProductDetails.description}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}

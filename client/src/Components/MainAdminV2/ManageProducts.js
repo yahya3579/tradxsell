@@ -663,7 +663,7 @@ const ManageProducts = () => {
                         </button>
                         <Link
                           className="btn btn-outline-info btn-sm"
-                          to={`/adminproducts/${product.id}`}
+                          to={`/admin/products/${product.id}`}
                         >
                           Details
                         </Link>
