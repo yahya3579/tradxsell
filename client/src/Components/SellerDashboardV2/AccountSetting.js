@@ -35,7 +35,7 @@ export default function AccountSetting() {
   // Fetch seller profile on mount
   useEffect(() => {
     if (!userId) return;
-    fetch(`http://localhost:3001/seller/profile?userId=${userId}`)
+    fetch(`${process.env.REACT_APP_LOCALHOST_URL}/seller/profile?userId=${userId}`)
       .then(res => res.json())
       .then(data => {
         if (data.seller) {
@@ -151,7 +151,7 @@ export default function AccountSetting() {
 
     // Send the request
     try {
-      const response = await fetch('http://localhost:3001/seller/profile', {
+      const response = await fetch(`${process.env.REACT_APP_LOCALHOST_URL}/seller/profile`, {
         method: 'POST',
         body: formData,
       });

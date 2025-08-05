@@ -1201,7 +1201,7 @@ getColumnClass = () => {
                     fontSize: '14px',
                     cursor: 'pointer'
                   }}
-                  onClick={() => window.open('/seller/verification', '_blank')}
+                  onClick={() => window.open('/admin/sellerdashboard/accountsettings', '_blank')}
                 >
                   Submit Documents
                 </button>
