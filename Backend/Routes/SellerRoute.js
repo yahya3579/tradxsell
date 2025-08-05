@@ -122,12 +122,18 @@ router.post('/profile', upload.fields([
       console.log(`📄 Uploading ${req.files.legalDocs.length} legal documents...`);
       for (const file of req.files.legalDocs) {
         await new Promise((resolve, reject) => {
+          const uploadOptions = {
+            folder: 'seller_legal_docs',
+            resource_type: file.mimetype.startsWith('image/') ? 'image' : 'raw'
+          };
+          
+          // Only add transformation for images
+          if (file.mimetype.startsWith('image/')) {
+            uploadOptions.transformation = [{ width: 800, height: 800, crop: 'limit' }];
+          }
+          
           const stream = cloudinary.uploader.upload_stream(
-            { 
-              folder: 'seller_legal_docs',
-              resource_type: file.mimetype.startsWith('image/') ? 'image' : 'raw',
-              format: file.mimetype.startsWith('image/') ? 'auto' : undefined
-            },
+            uploadOptions,
             (error, result) => {
               if (error) {
                 console.error('❌ Legal doc upload error:', error);
@@ -155,12 +161,18 @@ router.post('/profile', upload.fields([
       console.log(`🆔 Uploading ${req.files.cnicDocs.length} CNIC documents...`);
       for (const file of req.files.cnicDocs) {
         await new Promise((resolve, reject) => {
+          const uploadOptions = {
+            folder: 'seller_cnic_docs',
+            resource_type: file.mimetype.startsWith('image/') ? 'image' : 'raw'
+          };
+          
+          // Only add transformation for images
+          if (file.mimetype.startsWith('image/')) {
+            uploadOptions.transformation = [{ width: 800, height: 800, crop: 'limit' }];
+          }
+          
           const stream = cloudinary.uploader.upload_stream(
-            { 
-              folder: 'seller_cnic_docs',
-              resource_type: file.mimetype.startsWith('image/') ? 'image' : 'raw',
-              format: file.mimetype.startsWith('image/') ? 'auto' : undefined
-            },
+            uploadOptions,
             (error, result) => {
               if (error) {
                 console.error('❌ CNIC doc upload error:', error);
