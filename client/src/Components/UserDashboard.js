@@ -29,7 +29,7 @@ function UserDashboard() {
                 setLoading(true);
                 setError('');
                 const response = await axios.get(
-                    `${process.env.REACT_APP_LOCALHOST_URL}/userdetails`,
+                    `${process.env.REACT_APP_LOCALHOST_URL}/users/userdetails`,
                     {
                         params: { id }
                     }
