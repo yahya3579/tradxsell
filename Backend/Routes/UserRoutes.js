@@ -41,20 +41,27 @@ app.post('/addnew', async (req, res) => {
   
       await newUser.save();
   
-      const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+      const verificationUrl = `${process.env.FRONTEND_URL || 'https://tradxsell.com'}/verify-email/${verificationToken}`;
   
-      await transporter.sendMail({
-        from: '"Tradxsell" <support@tradxsell.com>',
-        to: newUser.email,
-        subject: 'Please verify your email',
-        html: `
-          <h1>Email Verification</h1>
-          <p>Hello ${newUser.username},</p>
-          <p>Please verify your email by clicking the link below:</p>
-          <a href="${verificationUrl}">Verify Email</a>
-          <p>This link will expire in 5 minutes.</p>
-        `
-      });
+      try {
+        await transporter.sendMail({
+          from: '"Tradxsell" <support@tradxsell.com>',
+          to: newUser.email,
+          subject: 'Please verify your email',
+          html: `
+            <h1>Email Verification</h1>
+            <p>Hello ${newUser.username},</p>
+            <p>Please verify your email by clicking the link below:</p>
+            <a href="${verificationUrl}">Verify Email</a>
+            <p>This link will expire in 5 minutes.</p>
+          `
+        });
+        console.log('Verification email sent successfully');
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Don't fail the registration if email fails, but log it
+        // You might want to implement a retry mechanism or queue system
+      }
 
       // await transactionalEmailApi.sendTransacEmail({
       //   sender: { email: 'support@tradxsell.com', name: 'Tradxsell' },
@@ -73,7 +80,7 @@ app.post('/addnew', async (req, res) => {
       return res.status(201).json({ message: 'User added successfully. Please check your email to verify your account.' }); 
     } catch (err) {
       console.error('Error saving user:', err);
-      return res.status(500).json({ error: 'Failed to add user' });
+      return res.status(500).json({ error: 'Failed to add user: ' + err.message });
     }
   });
   
