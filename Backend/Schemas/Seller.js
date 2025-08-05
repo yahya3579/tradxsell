@@ -132,12 +132,28 @@ const sellerSchema = new mongoose.Schema(
 
 // 🔧 Auto-generate storeSlug from companyName
 sellerSchema.pre("validate", async function (next) {
-  if (this.companyName) {
+  if (this.companyName && (!this.storeSlug || this.storeSlug === null)) {
     const slugify = require("slugify");
     let baseSlug = slugify(this.companyName, { lower: true, strict: true });
     let slug = baseSlug;
     let count = 1;
     // Only check for uniqueness if the slug is new or companyName changed
+    while (await this.constructor.findOne({ storeSlug: slug, _id: { $ne: this._id } })) {
+      slug = `${baseSlug}-${count++}`;
+    }
+    this.storeSlug = slug;
+  }
+  next();
+});
+
+// 🔧 Ensure storeSlug is always set before saving
+sellerSchema.pre("save", async function (next) {
+  if (this.companyName && (!this.storeSlug || this.storeSlug === null)) {
+    const slugify = require("slugify");
+    let baseSlug = slugify(this.companyName, { lower: true, strict: true });
+    let slug = baseSlug;
+    let count = 1;
+    // Check for uniqueness
     while (await this.constructor.findOne({ storeSlug: slug, _id: { $ne: this._id } })) {
       slug = `${baseSlug}-${count++}`;
     }

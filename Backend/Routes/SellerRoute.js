@@ -213,17 +213,54 @@ router.post('/profile', upload.fields([
 
     console.log('💾 Updating seller profile in database...');
 
-    // Update or create the seller profile
-    const seller = await SellerProfile.findOneAndUpdate(
-      { user: userId },
-      { $set: update },
-      { new: true, upsert: true }
-    );
+    // Generate storeSlug from companyName
+    const slugify = require('slugify');
+    let baseSlug = slugify(companyName, { lower: true, strict: true });
+    let slug = baseSlug;
+    let count = 1;
+    
+    // Check for existing slug and generate unique one
+    while (await SellerProfile.findOne({ storeSlug: slug, user: { $ne: userId } })) {
+      slug = `${baseSlug}-${count++}`;
+    }
+    
+    update.storeSlug = slug;
+
+    // Find existing seller profile or create new one
+    let seller = await SellerProfile.findOne({ user: userId });
+    
+    if (seller) {
+      // Update existing profile
+      Object.assign(seller, update);
+      await seller.save();
+    } else {
+      // Create new profile
+      seller = new SellerProfile({
+        user: userId,
+        ...update
+      });
+      await seller.save();
+    }
 
     console.log('✅ Seller profile updated successfully');
     res.status(200).json({ message: 'Seller profile updated', seller });
   } catch (error) {
     console.error('❌ Error updating seller profile:', error);
+    
+    // Handle specific MongoDB errors
+    if (error.code === 11000) {
+      if (error.keyPattern && error.keyPattern.storeSlug) {
+        return res.status(400).json({ 
+          error: 'Store slug already exists. Please try a different company name.',
+          details: 'A seller with this company name already exists.'
+        });
+      }
+      return res.status(400).json({ 
+        error: 'Duplicate entry error',
+        details: error.message
+      });
+    }
+    
     res.status(500).json({ error: 'Error updating seller profile', details: error.message });
   }
 });
@@ -931,33 +968,86 @@ router.delete('/delete-file', async (req, res) => {
 // Test route to check Cloudinary configuration
 router.get('/test-cloudinary', async (req, res) => {
   try {
-    console.log('🔍 Testing Cloudinary configuration...');
-    console.log('Cloud name:', process.env.CLOUDINARY_CLOUD_NAME ? 'Set' : 'Not set');
-    console.log('API Key:', process.env.CLOUDINARY_API_KEY ? 'Set' : 'Not set');
-    console.log('API Secret:', process.env.CLOUDINARY_API_SECRET ? 'Set' : 'Not set');
+    console.log('�� Testing Cloudinary connection...');
     
-    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-      return res.status(500).json({ 
+    // Check environment variables
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    
+    console.log('☁️ Cloudinary config:', {
+      cloudName: cloudName ? 'Set' : 'Missing',
+      apiKey: apiKey ? 'Set' : 'Missing',
+      apiSecret: apiSecret ? 'Set' : 'Missing'
+    });
+    
+    if (!cloudName || !apiKey || !apiSecret) {
+      return res.status(500).json({
         error: 'Cloudinary environment variables not configured',
-        cloudName: !!process.env.CLOUDINARY_CLOUD_NAME,
-        apiKey: !!process.env.CLOUDINARY_API_KEY,
-        apiSecret: !!process.env.CLOUDINARY_API_SECRET
+        missing: {
+          cloudName: !cloudName,
+          apiKey: !apiKey,
+          apiSecret: !apiSecret
+        }
       });
     }
     
-    // Test Cloudinary connection
+    // Test API connection by pinging Cloudinary
     const result = await cloudinary.api.ping();
-    console.log('✅ Cloudinary test result:', result);
+    console.log('✅ Cloudinary ping successful:', result);
     
-    res.json({ 
-      message: 'Cloudinary configuration is working',
-      status: 'ok',
-      cloudinary: result
+    res.json({
+      message: 'Cloudinary connection successful',
+      status: result.status,
+      timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ Cloudinary test error:', error);
-    res.status(500).json({ 
-      error: 'Cloudinary configuration error',
+    console.error('❌ Cloudinary test failed:', error);
+    res.status(500).json({
+      error: 'Cloudinary connection failed',
+      details: error.message
+    });
+  }
+});
+
+// Clean up null storeSlug entries
+router.post('/fix-store-slugs', async (req, res) => {
+  try {
+    console.log('🔧 Fixing null storeSlug entries...');
+    
+    // Find all documents with null storeSlug
+    const nullSlugDocs = await SellerProfile.find({ storeSlug: null });
+    console.log(`📋 Found ${nullSlugDocs.length} documents with null storeSlug`);
+    
+    let fixedCount = 0;
+    for (const doc of nullSlugDocs) {
+      if (doc.companyName) {
+        const slugify = require('slugify');
+        let baseSlug = slugify(doc.companyName, { lower: true, strict: true });
+        let slug = baseSlug;
+        let count = 1;
+        
+        // Check for existing slug and generate unique one
+        while (await SellerProfile.findOne({ storeSlug: slug, _id: { $ne: doc._id } })) {
+          slug = `${baseSlug}-${count++}`;
+        }
+        
+        // Update the document
+        await SellerProfile.findByIdAndUpdate(doc._id, { storeSlug: slug });
+        fixedCount++;
+        console.log(`✅ Fixed storeSlug for ${doc.companyName}: ${slug}`);
+      }
+    }
+    
+    res.json({
+      message: `Fixed ${fixedCount} null storeSlug entries`,
+      totalFound: nullSlugDocs.length,
+      fixedCount
+    });
+  } catch (error) {
+    console.error('❌ Error fixing storeSlugs:', error);
+    res.status(500).json({
+      error: 'Error fixing storeSlugs',
       details: error.message
     });
   }
