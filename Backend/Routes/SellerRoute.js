@@ -87,7 +87,37 @@ router.post('/profile', upload.fields([
       return res.status(400).json({ error: 'Company name is required' });
     }
 
+    // Validation: businessType is required
+    if (!businessType || businessType.trim() === "") {
+      console.log('❌ Business type missing');
+      return res.status(400).json({ error: 'Business type is required' });
+    }
+
+    // Validation: phoneNumber is required
+    if (!phoneNumber || phoneNumber.trim() === "") {
+      console.log('❌ Phone number missing');
+      return res.status(400).json({ error: 'Phone number is required' });
+    }
+
+    // Validation: officeAddress is required
+    if (!officeAddress || officeAddress.trim() === "") {
+      console.log('❌ Office address missing');
+      return res.status(400).json({ error: 'Office address is required' });
+    }
+
+    // Validation: monthlySales should be a valid number
+    let validatedMonthlySales = 0;
+    if (monthlySales) {
+      const salesNumber = parseFloat(monthlySales);
+      if (isNaN(salesNumber)) {
+        console.log('❌ Invalid monthly sales value:', monthlySales);
+        return res.status(400).json({ error: 'Monthly sales must be a valid number' });
+      }
+      validatedMonthlySales = salesNumber;
+    }
+
     console.log('🏢 Company name:', companyName);
+    console.log('💰 Monthly sales:', validatedMonthlySales);
 
     // Upload logo to Cloudinary if present
     let profileImageUrl;
@@ -203,7 +233,7 @@ router.post('/profile', upload.fields([
       phoneNumber,
       officeAddress,
       warehouseAddress,
-      monthlySales,
+      monthlySales: validatedMonthlySales,
       socialLinks: { facebook, instagram, linkedin },
       legalDocuments: legalDocsArr,
       cnicDocuments: cnicDocsArr
@@ -246,6 +276,20 @@ router.post('/profile', upload.fields([
     res.status(200).json({ message: 'Seller profile updated', seller });
   } catch (error) {
     console.error('❌ Error updating seller profile:', error);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.keys(error.errors).map(key => ({
+        field: key,
+        message: error.errors[key].message
+      }));
+      
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: validationErrors,
+        message: 'Please check the form data and try again.'
+      });
+    }
     
     // Handle specific MongoDB errors
     if (error.code === 11000) {

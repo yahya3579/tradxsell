@@ -79,7 +79,7 @@ class ManageProducts extends Component {
   };
 
   handleNavigateToAccountSettings = () => {
-    this.props.history.push('/admin/sellerdashboard/accountsettings');
+    window.location.href = '/sellerdashboard/accountsettings';
   };
 
   checkSellerVerification = async () => {

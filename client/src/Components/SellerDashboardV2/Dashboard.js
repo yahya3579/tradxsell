@@ -442,7 +442,7 @@ const Dashboard = () => {
                 fontSize: '14px',
                 cursor: 'pointer'
               }}
-              onClick={() => window.open('/seller/verification', '_blank')}
+              onClick={() => window.location.href = '/sellerdashboard/accountsettings'}
             >
               Submit Documents
             </button>

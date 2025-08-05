@@ -166,6 +166,28 @@ export default function AccountSetting() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Client-side validation for monthlySales
+    if (monthlySales && isNaN(parseFloat(monthlySales))) {
+      toast.error('Monthly sales must be a valid number', {
+        duration: 4000,
+        position: "top-center",
+        style: {
+          background: '#f44336',
+          color: '#fff',
+          borderRadius: '10px',
+          fontSize: '16px',
+          fontWeight: '500',
+          padding: '16px 20px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        },
+        iconTheme: {
+          primary: '#fff',
+          secondary: '#f44336',
+        },
+      });
+      return;
+    }
+    
     // Show loading toast
     const loadingToast = toast.loading('Saving changes...', {
       position: "top-center",
@@ -192,7 +214,7 @@ export default function AccountSetting() {
     formData.append('phoneNumber', phoneNumber);
     formData.append('officeAddress', officeAddress);
     formData.append('warehouseAddress', warehouseAddress);
-    formData.append('monthlySales', monthlySales);
+    formData.append('monthlySales', monthlySales ? parseFloat(monthlySales) : 0);
     formData.append('facebook', facebook);
     formData.append('instagram', instagram);
     formData.append('linkedin', linkedin);
@@ -536,11 +558,14 @@ export default function AccountSetting() {
                     Accumulative Sales (Monthly)
                   </label>
                   <input
+                    type="number"
                     name="sales"
                     value={monthlySales}
                     onChange={e => setMonthlySales(e.target.value)}
                     className={styles.input}
                     placeholder="Enter your sales"
+                    min="0"
+                    step="0.01"
                     required
                   />
                 </div>
