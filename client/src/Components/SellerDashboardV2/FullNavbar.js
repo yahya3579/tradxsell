@@ -1,14 +1,44 @@
-import { React, useState } from "react";
+import { React, useState, useContext, useEffect } from "react";
 import "./fullnavbar.css";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../../AuthContext.js";
+import { Store } from "lucide-react";
 
 export default function FullNavbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sellerLogo, setSellerLogo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const { id: userId } = useContext(AuthContext);
 
   // Toggle the sidebar open/close
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
+
+  // Fetch seller profile to get logo
+  useEffect(() => {
+    const fetchSellerProfile = async () => {
+      if (!userId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${process.env.REACT_APP_LOCALHOST_URL}/seller/profile?userId=${userId}`);
+        const data = await response.json();
+        
+        if (data.seller && data.seller.profileImageUrl) {
+          setSellerLogo(data.seller.profileImageUrl);
+        }
+      } catch (error) {
+        console.error('Error fetching seller profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSellerProfile();
+  }, [userId]);
 
   return (
     <div className="container-navbar container-navbar">
@@ -24,9 +54,47 @@ export default function FullNavbar() {
           </button>
 
           {/* Navbar brand */}
-          <a className="navbar-brand" style={{fontSize: "14px"}} href="#">
-            Tradxsell Seller Central
-          </a>
+          <div className="d-flex align-items-center">
+            {/* Seller Logo or Store Icon */}
+            {sellerLogo && !loading ? (
+              <img
+                src={sellerLogo}
+                alt="Seller Logo"
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  marginRight: "10px",
+                  border: "2px solid #EF5B2B"
+                }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+            ) : (
+              <Store 
+                className="text-light" 
+                size={40} 
+                style={{
+                  marginRight: "10px",
+                  color: "#EF5B2B"
+                }}
+              />
+            )}
+            
+            {/* Brand text */}
+            <a 
+              className="navbar-brand" 
+              style={{
+                fontSize: "14px"
+              }} 
+              href="#"
+            >
+              Tradxsell Seller Central
+            </a>
+          </div>
 
           {/* Navbar links */}
           <div className="collapse navbar-collapse">
