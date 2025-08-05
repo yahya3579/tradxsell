@@ -76,6 +76,10 @@ class ManageProducts extends Component {
     this.setState({ isMobile: window.innerWidth < 576 });
   };
 
+  handleNavigateToAccountSettings = () => {
+    this.props.history.push('/admin/sellerdashboard/accountsettings');
+  };
+
   checkSellerVerification = async () => {
     const { email } = this.context;
     if (!email) return;
@@ -1201,7 +1205,7 @@ getColumnClass = () => {
                     fontSize: '14px',
                     cursor: 'pointer'
                   }}
-                  onClick={() => window.open('/admin/sellerdashboard/accountsettings', '_blank')}
+                  onClick={this.handleNavigateToAccountSettings}
                 >
                   Submit Documents
                 </button>
