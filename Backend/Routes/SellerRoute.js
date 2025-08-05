@@ -25,17 +25,47 @@ const upload = multer({
   }
 });
 
+// Error handling middleware for multer
+const handleMulterError = (error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    console.error('❌ Multer error:', error);
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'File too large. Maximum size is 10MB.' });
+    }
+    if (error.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({ error: 'Too many files uploaded.' });
+    }
+    return res.status(400).json({ error: 'File upload error: ' + error.message });
+  }
+  
+  if (error) {
+    console.error('❌ Upload error:', error);
+    return res.status(400).json({ error: error.message });
+  }
+  
+  next();
+};
+
 // Update or create seller profile (Cloudinary for all files)
 router.post('/profile', upload.fields([
   { name: 'logo', maxCount: 1 },
   { name: 'legalDocs', maxCount: 5 },
   { name: 'cnicDocs', maxCount: 2 }
-]), async (req, res) => {
+]), handleMulterError, async (req, res) => {
   try {
+    console.log('🔍 Seller profile update request received');
+    console.log('📁 Files received:', req.files ? Object.keys(req.files) : 'No files');
+    console.log('📝 Body data:', Object.keys(req.body));
+    
     // You should get userId from authentication middleware (e.g., req.user._id)
     // For demo, get from req.body.userId
     const userId = req.body.userId;
-    if (!userId) return res.status(400).json({ error: 'User ID is required' });
+    if (!userId) {
+      console.log('❌ User ID missing');
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    console.log('👤 User ID:', userId);
 
     const {
       companyName,
@@ -53,12 +83,16 @@ router.post('/profile', upload.fields([
 
     // Validation: companyName is required
     if (!companyName || companyName.trim() === "") {
+      console.log('❌ Company name missing');
       return res.status(400).json({ error: 'Company name is required' });
     }
+
+    console.log('🏢 Company name:', companyName);
 
     // Upload logo to Cloudinary if present
     let profileImageUrl;
     if (req.files && req.files.logo && req.files.logo[0]) {
+      console.log('📸 Uploading logo to Cloudinary...');
       const logoFile = req.files.logo[0];
       await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
@@ -68,9 +102,14 @@ router.post('/profile', upload.fields([
             transformation: [{ width: 400, height: 400, crop: 'fill' }]
           },
           (error, result) => {
-            if (error) reject(error);
-            profileImageUrl = result.secure_url;
-            resolve();
+            if (error) {
+              console.error('❌ Logo upload error:', error);
+              reject(error);
+            } else {
+              console.log('✅ Logo uploaded successfully');
+              profileImageUrl = result.secure_url;
+              resolve();
+            }
           }
         );
         stream.end(logoFile.buffer);
@@ -80,6 +119,7 @@ router.post('/profile', upload.fields([
     // Upload legal documents to Cloudinary
     let legalDocsArr = [];
     if (req.files && req.files.legalDocs) {
+      console.log(`📄 Uploading ${req.files.legalDocs.length} legal documents...`);
       for (const file of req.files.legalDocs) {
         await new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
@@ -89,14 +129,19 @@ router.post('/profile', upload.fields([
               format: file.mimetype.startsWith('image/') ? 'auto' : undefined
             },
             (error, result) => {
-              if (error) reject(error);
-              legalDocsArr.push({
-                url: result.secure_url,
-                public_id: result.public_id,
-                type: file.mimetype,
-                name: file.originalname
-              });
-              resolve();
+              if (error) {
+                console.error('❌ Legal doc upload error:', error);
+                reject(error);
+              } else {
+                console.log('✅ Legal doc uploaded:', file.originalname);
+                legalDocsArr.push({
+                  url: result.secure_url,
+                  public_id: result.public_id,
+                  type: file.mimetype,
+                  name: file.originalname
+                });
+                resolve();
+              }
             }
           );
           stream.end(file.buffer);
@@ -107,6 +152,7 @@ router.post('/profile', upload.fields([
     // Upload CNIC documents to Cloudinary
     let cnicDocsArr = [];
     if (req.files && req.files.cnicDocs) {
+      console.log(`🆔 Uploading ${req.files.cnicDocs.length} CNIC documents...`);
       for (const file of req.files.cnicDocs) {
         await new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
@@ -116,14 +162,19 @@ router.post('/profile', upload.fields([
               format: file.mimetype.startsWith('image/') ? 'auto' : undefined
             },
             (error, result) => {
-              if (error) reject(error);
-              cnicDocsArr.push({
-                url: result.secure_url,
-                public_id: result.public_id,
-                type: file.mimetype,
-                name: file.originalname
-              });
-              resolve();
+              if (error) {
+                console.error('❌ CNIC doc upload error:', error);
+                reject(error);
+              } else {
+                console.log('✅ CNIC doc uploaded:', file.originalname);
+                cnicDocsArr.push({
+                  url: result.secure_url,
+                  public_id: result.public_id,
+                  type: file.mimetype,
+                  name: file.originalname
+                });
+                resolve();
+              }
             }
           );
           stream.end(file.buffer);
@@ -148,6 +199,8 @@ router.post('/profile', upload.fields([
 
     if (profileImageUrl) update.profileImageUrl = profileImageUrl;
 
+    console.log('💾 Updating seller profile in database...');
+
     // Update or create the seller profile
     const seller = await SellerProfile.findOneAndUpdate(
       { user: userId },
@@ -155,10 +208,11 @@ router.post('/profile', upload.fields([
       { new: true, upsert: true }
     );
 
+    console.log('✅ Seller profile updated successfully');
     res.status(200).json({ message: 'Seller profile updated', seller });
   } catch (error) {
-    console.error('Error updating seller profile:', error);
-    res.status(500).json({ error: 'Error updating seller profile' });
+    console.error('❌ Error updating seller profile:', error);
+    res.status(500).json({ error: 'Error updating seller profile', details: error.message });
   }
 });
 
@@ -859,6 +913,41 @@ router.delete('/delete-file', async (req, res) => {
   } catch (error) {
     console.error('Error deleting file:', error);
     res.status(500).json({ error: 'Failed to delete file' });
+  }
+});
+
+// Test route to check Cloudinary configuration
+router.get('/test-cloudinary', async (req, res) => {
+  try {
+    console.log('🔍 Testing Cloudinary configuration...');
+    console.log('Cloud name:', process.env.CLOUDINARY_CLOUD_NAME ? 'Set' : 'Not set');
+    console.log('API Key:', process.env.CLOUDINARY_API_KEY ? 'Set' : 'Not set');
+    console.log('API Secret:', process.env.CLOUDINARY_API_SECRET ? 'Set' : 'Not set');
+    
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      return res.status(500).json({ 
+        error: 'Cloudinary environment variables not configured',
+        cloudName: !!process.env.CLOUDINARY_CLOUD_NAME,
+        apiKey: !!process.env.CLOUDINARY_API_KEY,
+        apiSecret: !!process.env.CLOUDINARY_API_SECRET
+      });
+    }
+    
+    // Test Cloudinary connection
+    const result = await cloudinary.api.ping();
+    console.log('✅ Cloudinary test result:', result);
+    
+    res.json({ 
+      message: 'Cloudinary configuration is working',
+      status: 'ok',
+      cloudinary: result
+    });
+  } catch (error) {
+    console.error('❌ Cloudinary test error:', error);
+    res.status(500).json({ 
+      error: 'Cloudinary configuration error',
+      details: error.message
+    });
   }
 });
 

@@ -8,25 +8,45 @@ const { Server } = require("socket.io");
 
 const app = express();
 
-// CORS middleware FIRST
+// Enhanced CORS middleware with better debugging
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000", // local frontend
-      "https://tradxsell.com", // production
-      "https://www.tradxsell.com",
-      "https://apiback.tradxsell.com" // backend domain
-    ],
+    origin: function (origin, callback) {
+      const allowedOrigins = [
+        "http://localhost:3000", // local frontend
+        "https://tradxsell.com", // production
+        "https://www.tradxsell.com",
+        "https://apiback.tradxsell.com" // backend domain
+      ];
+      
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        console.log('CORS blocked origin:', origin);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     optionsSuccessStatus: 200
   })
 );
+
 // Handle preflight requests
 app.options('*', cors());
 
-app.use(express.json());
+// Add request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${req.headers.origin}`);
+  next();
+});
+
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Serve static files
 app.use(
@@ -116,9 +136,9 @@ app.get("/health", (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Error:', err.stack);
   res.setHeader('Content-Type', 'application/json');
-  res.status(500).json({ error: 'Something went wrong!' });
+  res.status(500).json({ error: 'Something went wrong!', message: err.message });
 });
 
 // 404 handler
