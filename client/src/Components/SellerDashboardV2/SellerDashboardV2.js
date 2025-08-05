@@ -2,7 +2,7 @@
 import { React, useState, useContext, useEffect } from "react";
 import FullNavbar from "./FullNavbar";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./SellerDashboardV2.css";
 import { AuthContext } from "../../AuthContext.js";
 import {
@@ -32,6 +32,7 @@ ChartJS.register(
 );
 
 export default function SellerDashboardV2() {
+  const navigate = useNavigate();
   // States
   const [totalProducts, setTotalProducts] = useState(0);
   const { id: userId, email: sellerEmail, username: sellerusername } =
@@ -53,6 +54,8 @@ export default function SellerDashboardV2() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tags, setTags] = useState([]);
+  const [isVerified, setIsVerified] = useState(false);
+  const [verificationError, setVerificationError] = useState(null);
 
   const [dailyOrders, setDailyOrders] = useState(new Array(31).fill(0));
 
@@ -397,14 +400,35 @@ export default function SellerDashboardV2() {
 
   useEffect(() => {
     if (!userId) return;
-    fetch(`http://localhost:3001/seller/profile?userId=${userId}`)
+    fetch(`${process.env.REACT_APP_LOCALHOST_URL}/seller/profile?userId=${userId}`)
       .then(res => res.json())
       .then(data => {
         if (data.seller) {
           setTags(data.seller.tags || []);
+          
+          // Check if seller has required verification tags
+          const sellerTags = data.seller.tags || [];
+          const hasRequiredTags = sellerTags.some(tag => 
+            tag === 'registered' || tag === 'verified' || tag === 'gold'
+          );
+          
+          setIsVerified(hasRequiredTags);
+          setVerificationError(hasRequiredTags ? null : 'Your account needs verification to access full features');
+        } else {
+          setIsVerified(false);
+          setVerificationError('Seller profile not found. Please contact support.');
         }
+      })
+      .catch(error => {
+        console.error('Error fetching seller profile:', error);
+        setIsVerified(false);
+        setVerificationError('Unable to verify seller status. Please try again.');
       });
   }, [userId]);
+
+  const handleNavigateToAccountSettings = () => {
+    navigate('/admin/sellerdashboard/accountsettings');
+  };
   
   const data = {
     labels: ["Total Products"],
@@ -534,6 +558,46 @@ export default function SellerDashboardV2() {
           Here's Your Current Sales Overview
         </div>
       </div>
+
+      {/* Verification Status Banner */}
+      {!isVerified && verificationError && (
+        <div className="container mt-3 mb-3">
+          <div className="alert alert-warning" role="alert" style={{
+            backgroundColor: '#fff3cd',
+            border: '1px solid #ffeaa7',
+            borderRadius: '8px',
+            padding: '15px',
+            color: '#856404'
+          }}>
+            <div className="d-flex align-items-center justify-content-between flex-wrap" style={{ gap: '10px' }}>
+              <div>
+                <strong>⚠️ Account Verification Required</strong>
+                <p style={{ margin: '5px 0 0 0', fontSize: '14px' }}>
+                  {verificationError}
+                </p>
+                <p style={{ margin: '5px 0 0 0', fontSize: '14px' }}>
+                  Please submit your business documents and wait for admin verification to access full dashboard features.
+                </p>
+              </div>
+              <button 
+                className="btn btn-warning"
+                style={{
+                  backgroundColor: '#ff5722',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '5px',
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  cursor: 'pointer'
+                }}
+                onClick={handleNavigateToAccountSettings}
+              >
+                Submit Documents
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Show error message if exists */}
       {error && (

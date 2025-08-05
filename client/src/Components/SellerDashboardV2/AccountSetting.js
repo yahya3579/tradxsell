@@ -52,6 +52,32 @@ export default function AccountSetting() {
           setLinkedin(data.seller.socialLinks?.linkedin || "");
           if (data.seller.profileImageUrl) setLogoPreview(data.seller.profileImageUrl);
           setTags(data.seller.tags || []);
+          
+          // Display existing legal documents
+          if (data.seller.legalDocuments && data.seller.legalDocuments.length > 0) {
+            const existingLegalDocs = data.seller.legalDocuments.map(doc => ({
+              name: doc.name,
+              type: doc.type,
+              preview: doc.url,
+              size: 0, // We don't have size info from DB
+              isExisting: true,
+              public_id: doc.public_id
+            }));
+            setLegalDocs(existingLegalDocs);
+          }
+          
+          // Display existing CNIC documents
+          if (data.seller.cnicDocuments && data.seller.cnicDocuments.length > 0) {
+            const existingCnicDocs = data.seller.cnicDocuments.map(doc => ({
+              name: doc.name,
+              type: doc.type,
+              preview: doc.url,
+              size: 0, // We don't have size info from DB
+              isExisting: true,
+              public_id: doc.public_id
+            }));
+            setIdCardImages(existingCnicDocs);
+          }
         }
       });
   }, [userId]);
@@ -79,7 +105,11 @@ export default function AccountSetting() {
       alert(`You can upload up to ${maxLimit} ${label}.`);
       return;
     }
+    
+    // Store the actual file objects
     setFiles((prev) => [...prev, ...files]);
+    
+    // Create preview objects for display
     const previews = files.map((file) => ({
       name: file.name,
       type: file.type,
@@ -92,6 +122,44 @@ export default function AccountSetting() {
   const handleRemoveFile = (index, setPreviews, setFiles) => {
     setPreviews((prev) => prev.filter((_, i) => i !== index));
     setFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Handle removal of existing files (from database)
+  const handleRemoveExistingFile = async (index, setPreviews, fileType) => {
+    // Get the current state to access the file
+    const currentPreviews = fileType === 'legal' ? legalDocs : idCardImages;
+    const file = currentPreviews[index];
+    
+    if (!file.public_id) {
+      // If no public_id, just remove from UI
+      setPreviews((prev) => prev.filter((_, i) => i !== index));
+      return;
+    }
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_LOCALHOST_URL}/seller/delete-file`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          fileType,
+          publicId: file.public_id
+        })
+      });
+
+      if (response.ok) {
+        // Remove from UI after successful deletion
+        setPreviews((prev) => prev.filter((_, i) => i !== index));
+        toast.success('File deleted successfully');
+      } else {
+        const error = await response.json();
+        toast.error(`Error deleting file: ${error.error}`);
+      }
+    } catch (error) {
+      toast.error('Network error while deleting file');
+    }
   };
 
   // --- SUBMIT HANDLER ---
@@ -116,7 +184,7 @@ export default function AccountSetting() {
 
     formData.append('userId', userId);
 
-    // Get values from form fields (use refs or controlled state as needed)
+    // Get values from form fields
     formData.append('companyName', companyName);
     formData.append('businessType', businessType);
     formData.append('description', description);
@@ -129,25 +197,24 @@ export default function AccountSetting() {
     formData.append('instagram', instagram);
     formData.append('linkedin', linkedin);
 
-    // Only append the logo file if selected
+    // Append logo file if selected
     if (logoFile) {
       formData.append('logo', logoFile);
     }
 
-    // Prepare legalDocs and cnicDocs as arrays of objects
-    const legalDocsArr = legalDocFiles.map(file => ({
-      url: file.preview || '',
-      name: file.name,
-      type: file.type,
-    }));
-    const cnicDocsArr = idCardFiles.map(file => ({
-      url: file.preview || '',
-      name: file.name,
-      type: file.type,
-    }));
+    // Append legal documents
+    if (legalDocFiles && legalDocFiles.length > 0) {
+      legalDocFiles.forEach((file, index) => {
+        formData.append('legalDocs', file);
+      });
+    }
 
-    formData.append('legalDocs', JSON.stringify(legalDocsArr));
-    formData.append('cnicDocs', JSON.stringify(cnicDocsArr));
+    // Append CNIC documents
+    if (idCardFiles && idCardFiles.length > 0) {
+      idCardFiles.forEach((file, index) => {
+        formData.append('cnicDocs', file);
+      });
+    }
 
     // Send the request
     try {
@@ -179,6 +246,14 @@ export default function AccountSetting() {
             secondary: '#4CAF50',
           },
         });
+        
+        // Clear file states after successful upload
+        setLogoFile(null);
+        setLegalDocFiles([]);
+        setIdCardFiles([]);
+        setLegalDocs([]);
+        setIdCardImages([]);
+        
         // Optionally, re-fetch the profile to update the form
       } else {
         const errorMessage = data.error || 'Unknown error occurred';
@@ -528,7 +603,9 @@ export default function AccountSetting() {
                         className="position-absolute top-0 end-0 text-danger bg-white rounded-circle p-1"
                         style={{ cursor: "pointer" }}
                         onClick={() =>
-                          handleRemoveFile(idx, setLegalDocs, setLegalDocFiles)
+                          file.isExisting 
+                            ? handleRemoveExistingFile(idx, setLegalDocs, 'legal')
+                            : handleRemoveFile(idx, setLegalDocs, setLegalDocFiles)
                         }
                       />
                     </div>
@@ -588,7 +665,9 @@ export default function AccountSetting() {
                         className="position-absolute top-0 end-0 text-danger bg-white rounded-circle p-1"
                         style={{ cursor: "pointer" }}
                         onClick={() =>
-                          handleRemoveFile(idx, setIdCardImages, setIdCardFiles)
+                          file.isExisting 
+                            ? handleRemoveExistingFile(idx, setIdCardImages, 'cnic')
+                            : handleRemoveFile(idx, setIdCardImages, setIdCardFiles)
                         }
                       />
                     </div>

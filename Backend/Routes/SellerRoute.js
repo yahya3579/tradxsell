@@ -10,12 +10,27 @@ const User = require('../Schemas/UserSchema');
 const multer = require('multer');
 const { cloudinary } = require('../utils/cloudinary');
 
-// Use memory storage for multer (for logo upload)
+// Use memory storage for multer (for file uploads)
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only JPG, PNG, WEBP images and PDFs are allowed."), false);
+    }
+  }
+});
 
-// Update or create seller profile (Cloudinary for logo only)
-router.post('/profile', upload.single('logo'), async (req, res) => {
+// Update or create seller profile (Cloudinary for all files)
+router.post('/profile', upload.fields([
+  { name: 'logo', maxCount: 1 },
+  { name: 'legalDocs', maxCount: 5 },
+  { name: 'cnicDocs', maxCount: 2 }
+]), async (req, res) => {
   try {
     // You should get userId from authentication middleware (e.g., req.user._id)
     // For demo, get from req.body.userId
@@ -33,9 +48,7 @@ router.post('/profile', upload.single('logo'), async (req, res) => {
       monthlySales,
       facebook,
       instagram,
-      linkedin,
-      legalDocs,   // Expecting these as JSON stringified arrays or comma-separated
-      cnicDocs     // Same as above
+      linkedin
     } = req.body;
 
     // Validation: companyName is required
@@ -45,30 +58,77 @@ router.post('/profile', upload.single('logo'), async (req, res) => {
 
     // Upload logo to Cloudinary if present
     let profileImageUrl;
-    if (req.file) {
+    if (req.files && req.files.logo && req.files.logo[0]) {
+      const logoFile = req.files.logo[0];
       await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-          { folder: 'seller_logos', resource_type: 'image' },
+          { 
+            folder: 'seller_logos', 
+            resource_type: 'image',
+            transformation: [{ width: 400, height: 400, crop: 'fill' }]
+          },
           (error, result) => {
             if (error) reject(error);
             profileImageUrl = result.secure_url;
             resolve();
           }
         );
-        stream.end(req.file.buffer);
+        stream.end(logoFile.buffer);
       });
     }
 
-    // Parse legalDocs and cnicDocs if sent as JSON strings
+    // Upload legal documents to Cloudinary
     let legalDocsArr = [];
+    if (req.files && req.files.legalDocs) {
+      for (const file of req.files.legalDocs) {
+        await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { 
+              folder: 'seller_legal_docs',
+              resource_type: file.mimetype.startsWith('image/') ? 'image' : 'raw',
+              format: file.mimetype.startsWith('image/') ? 'auto' : undefined
+            },
+            (error, result) => {
+              if (error) reject(error);
+              legalDocsArr.push({
+                url: result.secure_url,
+                public_id: result.public_id,
+                type: file.mimetype,
+                name: file.originalname
+              });
+              resolve();
+            }
+          );
+          stream.end(file.buffer);
+        });
+      }
+    }
+
+    // Upload CNIC documents to Cloudinary
     let cnicDocsArr = [];
-    try {
-      if (legalDocs) legalDocsArr = JSON.parse(legalDocs);
-      if (cnicDocs) cnicDocsArr = JSON.parse(cnicDocs);
-    } catch (e) {
-      // fallback: treat as comma-separated
-      if (legalDocs) legalDocsArr = legalDocs.split(',');
-      if (cnicDocs) cnicDocsArr = cnicDocs.split(',');
+    if (req.files && req.files.cnicDocs) {
+      for (const file of req.files.cnicDocs) {
+        await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { 
+              folder: 'seller_cnic_docs',
+              resource_type: file.mimetype.startsWith('image/') ? 'image' : 'raw',
+              format: file.mimetype.startsWith('image/') ? 'auto' : undefined
+            },
+            (error, result) => {
+              if (error) reject(error);
+              cnicDocsArr.push({
+                url: result.secure_url,
+                public_id: result.public_id,
+                type: file.mimetype,
+                name: file.originalname
+              });
+              resolve();
+            }
+          );
+          stream.end(file.buffer);
+        });
+      }
     }
 
     // Build update object
@@ -97,7 +157,7 @@ router.post('/profile', upload.single('logo'), async (req, res) => {
 
     res.status(200).json({ message: 'Seller profile updated', seller });
   } catch (error) {
-    console.error(error);
+    console.error('Error updating seller profile:', error);
     res.status(500).json({ error: 'Error updating seller profile' });
   }
 });
@@ -763,6 +823,42 @@ router.get('/top-products', async (req, res) => {
     res.json(topProducts);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch top products' });
+  }
+});
+
+// Delete file from Cloudinary and database
+router.delete('/delete-file', async (req, res) => {
+  try {
+    const { userId, fileType, publicId } = req.body;
+    
+    if (!userId || !fileType || !publicId) {
+      return res.status(400).json({ error: 'User ID, file type, and public ID are required' });
+    }
+
+    // Delete from Cloudinary
+    try {
+      await cloudinary.uploader.destroy(publicId, { resource_type: 'auto' });
+    } catch (cloudinaryError) {
+      console.error('Cloudinary deletion error:', cloudinaryError);
+      // Continue with database update even if Cloudinary deletion fails
+    }
+
+    // Remove from database
+    const updateField = fileType === 'legal' ? 'legalDocuments' : 'cnicDocuments';
+    const seller = await SellerProfile.findOneAndUpdate(
+      { user: userId },
+      { $pull: { [updateField]: { public_id: publicId } } },
+      { new: true }
+    );
+
+    if (!seller) {
+      return res.status(404).json({ error: 'Seller profile not found' });
+    }
+
+    res.json({ message: 'File deleted successfully', seller });
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    res.status(500).json({ error: 'Failed to delete file' });
   }
 });
 
