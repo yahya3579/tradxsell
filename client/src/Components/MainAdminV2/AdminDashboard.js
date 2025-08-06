@@ -25,8 +25,11 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (!loggedIn || role !== 'MainAdmin') {
       navigate('/login', { replace: true });
+    } else if (location.pathname === '/admin') {
+      // If on base admin route, redirect to dashboard
+      navigate('/admin/dashboard', { replace: true });
     }
-  }, [loggedIn, role, navigate]);
+  }, [loggedIn, role, navigate, location.pathname]);
 
   useEffect(() => {
     const handleResize = () => {

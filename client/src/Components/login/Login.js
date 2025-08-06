@@ -123,7 +123,7 @@ const Login = () => {
         if (data.user.role === "user") {
           window.location.href = "/";
         } else if (data.user.role === "MainAdmin") {
-          window.location.href = "/admin/dashboard";
+          window.location.href = "/admin";
         } else if (data.user.role === "QualityAssurance") {
           window.location.href = "/quality/manageproducts";
         }

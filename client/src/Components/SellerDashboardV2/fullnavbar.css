@@ -1,5 +1,6 @@
 .container-navbar{
   max-width: 1500px;
+  padding-top: 80px; /* Add padding to prevent overlap with fixed navbar */
 }
 /* Navbar styles */
 .navbar {
@@ -17,9 +18,9 @@
   /* Sidebar styles */
 .sidebar {
     position: fixed;
-    top: 0;
+    top: 80px; /* Start below the main navbar */
     left: -250px;
-    height: 100%;
+    height: calc(100% - 80px); /* Adjust height to account for navbar */
     width: 250px;
     background-color: #ca5b3d;
     transition: all 0.4s;

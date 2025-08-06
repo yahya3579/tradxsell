@@ -1,11 +1,19 @@
 
 import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Package, DollarSign, CheckCircle, Shield, Star } from 'lucide-react';
 import { AuthContext } from '../../AuthContext';
 
 const Dashboard = () => {
-  const { id: userId, email: sellerEmail } = useContext(AuthContext);
+  const { id: userId, email: sellerEmail, loggedIn, role } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loggedIn || role !== 'seller') {
+      navigate('/login', { replace: true });
+    }
+  }, [loggedIn, role, navigate]);
   const [tags, setTags] = useState([]);
   const [stats, setStats] = useState({ totalSalesAmount: 0, totalOrders: 0, averageOrderValueThisMonth: 0 });
   const [topProducts, setTopProducts] = useState([]);
