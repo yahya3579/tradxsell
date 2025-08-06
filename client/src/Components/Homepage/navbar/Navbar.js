@@ -10,18 +10,33 @@ import { useCart } from "../../../CartContext";
 import { CurrencyContext } from "../../../CurrencyContext";
 
 const Navbar = () => {
-  const navigate = useNavigate();
   const location = useLocation();
+  const navigate = useNavigate();
   const [type, setType] = useState("");
   const [showMenu, setShowMenu] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
   const { loggedIn, handleLogout, role } = useContext(AuthContext);
   const { currency, updateCurrency, rates } = useContext(CurrencyContext);
+  const { cartCount } = useCart();
 
   // Determine if we are on a dashboard/admin/quality page
   const isDashboardRoute =
     location.pathname.startsWith("/admin") ||
     location.pathname.startsWith("/sellerdashboard") ||
     location.pathname.startsWith("/quality");
+
+  const toggleMenu = () => setShowMenu(!showMenu);
+  const closeMenuOnMobile = () => {
+    if (window.innerWidth <= 1150) setShowMenu(false);
+  };
+
+  useEffect(() => {
+    if (type === "") return;
+    const HandleLocalProducts = () => {
+      navigate("/allproducts", { state: { filter: type } });
+    };
+    HandleLocalProducts();
+  }, [type, navigate]);
 
   // Show simplified navbar for special roles ONLY on dashboard/admin/quality pages
   if (
@@ -117,21 +132,6 @@ const Navbar = () => {
       </header>
     );
   }
-
-  const toggleMenu = () => setShowMenu(!showMenu);
-  useEffect(() => {
-    if (type === "") return;
-    const HandleLocalProducts = () => {
-      navigate("/allproducts", { state: { filter: type } });
-    };
-    HandleLocalProducts();
-  }, [type]);
-
-  const closeMenuOnMobile = () => {
-    if (window.innerWidth <= 1150) setShowMenu(false);
-  };
-  const [showCategories, setShowCategories] = useState(false);
-  const { cartCount } = useCart();
 
   return (
     <header className="header">
