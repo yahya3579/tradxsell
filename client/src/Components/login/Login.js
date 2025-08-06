@@ -112,6 +112,7 @@ const Login = () => {
         });
 
         setSuccessMessage("Login successfully!");
+        
         handleLogin(
           data.user.email,
           data.user.username,
@@ -119,14 +120,21 @@ const Login = () => {
           data.user.id
         );
 
-        // Redirect based on the role
-        if (data.user.role === "user") {
-          window.location.href = "/";
-        } else if (data.user.role === "MainAdmin") {
-          window.location.href = "/admin";
-        } else if (data.user.role === "QualityAssurance") {
-          window.location.href = "/quality/manageproducts";
-        }
+        // Allow time for localStorage to be set, then redirect
+        setTimeout(() => {
+          // Redirect based on the role
+          if (data.user.role === "user") {
+            window.location.href = "/";
+          } else if (data.user.role === "MainAdmin") {
+            window.location.href = "/admin";
+          } else if (data.user.role === "QualityAssurance") {
+            window.location.href = "/quality/manageproducts";
+          } else if (data.user.role === "seller") {
+            window.location.href = "/sellerdashboard";
+          } else {
+            window.location.href = "/";
+          }
+        }, 100); // Small delay to ensure localStorage is set
       } else {
         // Show error toast
         toast.error("Invalid email or password. Please try again.", {

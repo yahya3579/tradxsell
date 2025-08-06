@@ -23,9 +23,22 @@ const AdminDashboard = () => {
   const getActive = (path) => location.pathname === path;
 
   useEffect(() => {
-    if (!loggedIn || role !== 'MainAdmin') {
+    // Check if we have data from localStorage on initial load
+    const storedRole = localStorage.getItem('role');
+    const storedEmail = localStorage.getItem('email');
+    
+    // If we have stored credentials and they indicate MainAdmin, allow access
+    if (storedRole === 'MainAdmin' && storedEmail) {
+      if (location.pathname === '/admin') {
+        navigate('/admin/dashboard', { replace: true });
+      }
+      return; // Don't redirect to login
+    }
+    
+    // Only redirect to login if we're sure the user is not logged in or not MainAdmin
+    if (loggedIn === false || (loggedIn && role && role !== 'MainAdmin')) {
       navigate('/login', { replace: true });
-    } else if (location.pathname === '/admin') {
+    } else if (loggedIn && role === 'MainAdmin' && location.pathname === '/admin') {
       // If on base admin route, redirect to dashboard
       navigate('/admin/dashboard', { replace: true });
     }
