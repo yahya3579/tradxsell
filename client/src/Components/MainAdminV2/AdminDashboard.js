@@ -17,10 +17,16 @@ const AdminDashboard = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 992);
   const [isHovered, setIsHovered] = useState(false);
   const [activeComponent, setActiveComponent] = useState("dashboard");
-  const { handleLogout } = useContext(AuthContext);
+  const { handleLogout, loggedIn, role } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const getActive = (path) => location.pathname === path;
+
+  useEffect(() => {
+    if (!loggedIn || role !== 'MainAdmin') {
+      navigate('/login', { replace: true });
+    }
+  }, [loggedIn, role, navigate]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -48,6 +54,7 @@ const AdminDashboard = () => {
       height: "100vh",
       backgroundColor: "#f3f3f3",
       position: "relative",
+      paddingTop: "80px", // Prevent overlap with fixed navbar
     },
     sidebar: {
       width: "250px",
@@ -163,7 +170,6 @@ const AdminDashboard = () => {
     },
   };
 
-  const role = localStorage.getItem("role");
   const userName = localStorage.getItem("username");
 
   return (

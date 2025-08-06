@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { IoMenu } from "react-icons/io5";
 import { FaShoppingCart } from "react-icons/fa";
 import "./navbar.css";
@@ -8,32 +8,26 @@ import { AuthContext } from "../../../AuthContext";
 import CategorySection from "./Catagories";
 import { useCart } from "../../../CartContext";
 import { CurrencyContext } from "../../../CurrencyContext";
-import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [type, setType] = useState("");
   const [showMenu, setShowMenu] = useState(false);
   const { loggedIn, handleLogout, role } = useContext(AuthContext);
   const { currency, updateCurrency, rates } = useContext(CurrencyContext);
 
-  const toggleMenu = () => setShowMenu(!showMenu);
-  useEffect(() => {
-    if (type === "") return;
-    const HandleLocalProducts = () => {
-      navigate("/allproducts", { state: { filter: type } });
-    };
-    HandleLocalProducts();
-  }, [type]);
+  // Determine if we are on a dashboard/admin/quality page
+  const isDashboardRoute =
+    location.pathname.startsWith("/admin") ||
+    location.pathname.startsWith("/sellerdashboard") ||
+    location.pathname.startsWith("/quality");
 
-  const closeMenuOnMobile = () => {
-    if (window.innerWidth <= 1150) setShowMenu(false);
-  };
-  const [showCategories, setShowCategories] = useState(false);
-  const { cartCount } = useCart();
-
-  // Simplified navbar for sellers and admins
-  if (role === "MainAdmin" || role === "QualityAssurance" || role === "seller") {
+  // Show simplified navbar for special roles ONLY on dashboard/admin/quality pages
+  if (
+    isDashboardRoute &&
+    (role === "MainAdmin" || role === "QualityAssurance" || role === "seller")
+  ) {
     return (
       <header className="header">
         <nav className="navbar navbar-expand-lg navbar-dark set-navbar">
@@ -123,6 +117,21 @@ const Navbar = () => {
       </header>
     );
   }
+
+  const toggleMenu = () => setShowMenu(!showMenu);
+  useEffect(() => {
+    if (type === "") return;
+    const HandleLocalProducts = () => {
+      navigate("/allproducts", { state: { filter: type } });
+    };
+    HandleLocalProducts();
+  }, [type]);
+
+  const closeMenuOnMobile = () => {
+    if (window.innerWidth <= 1150) setShowMenu(false);
+  };
+  const [showCategories, setShowCategories] = useState(false);
+  const { cartCount } = useCart();
 
   return (
     <header className="header">

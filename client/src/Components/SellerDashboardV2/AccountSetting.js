@@ -7,9 +7,11 @@ import { X, Camera } from "lucide-react";
 import { AuthContext } from "../../AuthContext";
 import { Badge } from "react-bootstrap";
 import { Toaster, toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function AccountSetting() {
-  const { id: userId } = useContext(AuthContext);
+  const { id: userId, loggedIn, role } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [companyName, setCompanyName] = useState("");
   const [businessType, setBusinessType] = useState("");
   const [description, setDescription] = useState("");
@@ -81,6 +83,12 @@ export default function AccountSetting() {
         }
       });
   }, [userId]);
+
+  useEffect(() => {
+    if (!loggedIn || role !== 'seller') {
+      navigate('/login', { replace: true });
+    }
+  }, [loggedIn, role, navigate]);
 
   const handleLogoChange = (event) => {
     const file = event.target.files[0];
