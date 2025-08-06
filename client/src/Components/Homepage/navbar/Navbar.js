@@ -32,14 +32,96 @@ const Navbar = () => {
   const [showCategories, setShowCategories] = useState(false);
   const { cartCount } = useCart();
 
-  if (role === "MainAdmin") {
-    return null;
-  }
-  if (role === "QualityAssurance") {
-    return null;
-  }
-  if (role === "seller") {
-    return null;
+  // Simplified navbar for sellers and admins
+  if (role === "MainAdmin" || role === "QualityAssurance" || role === "seller") {
+    return (
+      <header className="header">
+        <nav className="navbar navbar-expand-lg navbar-dark set-navbar">
+          <NavLink to="/" className="navbar-brand">
+            <img src={Logo} alt="Logo" className="nav__logo-img" />
+          </NavLink>
+          <button
+            className="navbar-toggler"
+            type="button"
+            onClick={toggleMenu}
+            aria-controls="navbarNav"
+            aria-expanded={showMenu}
+            aria-label="Toggle navigation"
+          >
+            <IoMenu />
+          </button>
+          <div className={`collapse navbar-collapse ${showMenu ? "show" : ""}`} id="navbarNav">
+            <ul className="navbar-nav ml-auto">
+              <li className="nav-item">
+                <NavLink
+                  to="/home"
+                  onClick={closeMenuOnMobile}
+                  className={({ isActive }) =>
+                    isActive ? "nav-link active" : "nav-link"
+                  }
+                >
+                  Home
+                </NavLink>
+              </li>
+              {role === "seller" && (
+                <li className="nav-item">
+                  <NavLink
+                    to="/sellerdashboard"
+                    onClick={closeMenuOnMobile}
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    Seller Dashboard
+                  </NavLink>
+                </li>
+              )}
+              {role === "MainAdmin" && (
+                <li className="nav-item">
+                  <NavLink
+                    to="/admin/dashboard"
+                    onClick={closeMenuOnMobile}
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    Admin Dashboard
+                  </NavLink>
+                </li>
+              )}
+              {role === "QualityAssurance" && (
+                <li className="nav-item">
+                  <NavLink
+                    to="/quality/manageproducts"
+                    onClick={closeMenuOnMobile}
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    Quality Dashboard
+                  </NavLink>
+                </li>
+              )}
+              <li className="nav-item">
+                <button
+                  className="nav-link"
+                  onClick={handleLogout}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'inherit',
+                    cursor: 'pointer',
+                    padding: '0.5rem 1rem'
+                  }}
+                >
+                  Logout
+                </button>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </header>
+    );
   }
 
   return (
@@ -252,13 +334,19 @@ const Navbar = () => {
                 borderRadius: "5px",
               }}
               >
-                <NavLink
-                  to="/login"
+                <button
                   className="nav-link"
                   onClick={handleLogout}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'inherit',
+                    cursor: 'pointer',
+                    padding: '0.5rem 1rem'
+                  }}
                 >
                   Logout
-                </NavLink>
+                </button>
               </li>
             )}
             
