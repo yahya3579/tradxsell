@@ -10,7 +10,17 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loggedIn || role !== 'seller') {
+    // Check if we have data from localStorage on initial load
+    const storedRole = localStorage.getItem('role');
+    const storedEmail = localStorage.getItem('email');
+    
+    // If we have stored credentials and they indicate seller, allow access
+    if (storedRole === 'seller' && storedEmail) {
+      return; // Don't redirect to login
+    }
+    
+    // Only redirect to login if we're sure the user is not logged in or not seller
+    if (loggedIn === false || (loggedIn && role && role !== 'seller')) {
       navigate('/login', { replace: true });
     }
   }, [loggedIn, role, navigate]);
