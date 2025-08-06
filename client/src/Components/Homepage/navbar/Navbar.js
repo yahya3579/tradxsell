@@ -213,7 +213,7 @@ const Navbar = () => {
             {role === "seller" ? (
               <li className="nav-item">
                 <NavLink
-                  to="/admin/sellerdashboard"
+                  to="/sellerdashboard"
                   onClick={closeMenuOnMobile}
                   className={({ isActive }) =>
                     isActive ? "nav-link active" : "nav-link"

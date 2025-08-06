@@ -15,13 +15,13 @@ export const AuthProvider = ({ children }) => {
         const storedrole = localStorage.getItem('role');
         const storedid = localStorage.getItem('id');
 
-
-        if (storedEmail && storedusername && storedrole && storedid) {
+        // Allow login if at least email and role are present
+        if (storedEmail && storedrole) {
             setEmail(storedEmail);
-            setusername(storedusername);
             setrole(storedrole);
-            setid(storedid);
             setLoggedIn(true);
+            if (storedusername) setusername(storedusername);
+            if (storedid) setid(storedid);
         }
     }, []);
 
