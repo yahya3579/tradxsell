@@ -4,7 +4,7 @@
   width: 100%;
   top: 0;
   left: 0;
-  background-color: #343a40; 
+  background-color: #F0F0F0; /* Match navbar background */
   z-index: 1000; 
 }
 

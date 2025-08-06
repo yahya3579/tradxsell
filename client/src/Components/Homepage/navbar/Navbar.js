@@ -43,7 +43,7 @@ const Navbar = () => {
   }
 
   return (
-    <header>
+    <header className="header">
       {/* Main Navbar */}
       <nav className="navbar navbar-expand-lg navbar-dark set-navbar">
         <NavLink to="/" className="navbar-brand">
