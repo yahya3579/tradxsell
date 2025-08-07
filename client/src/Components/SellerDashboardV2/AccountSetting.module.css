@@ -5,7 +5,7 @@
   justify-content: center;
   align-items: flex-start;
   padding: 0;
-  padding-top: 80px; /* Prevent overlap with fixed navbar */
+  padding-top: 60px; /* Reduced padding to prevent overlap with fixed navbar */
 }
 
 .settingsContainer {

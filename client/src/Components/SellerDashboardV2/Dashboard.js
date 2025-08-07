@@ -112,7 +112,7 @@ const Dashboard = () => {
       backgroundColor: '#f8f9fa',
       minHeight: '100vh',
       fontFamily: 'system-ui, -apple-system, sans-serif',
-      paddingTop: '80px', // Prevent overlap with fixed navbar
+      paddingTop: '60px', // Reduced padding to prevent overlap with fixed navbar
     },
     header: {
       padding: '20px 0',

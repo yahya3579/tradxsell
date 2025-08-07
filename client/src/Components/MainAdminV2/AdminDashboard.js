@@ -70,7 +70,7 @@ const AdminDashboard = () => {
       height: "100vh",
       backgroundColor: "#f3f3f3",
       position: "relative",
-      paddingTop: "80px", // Prevent overlap with fixed navbar
+      paddingTop: "60px", // Reduced padding to prevent overlap with fixed navbar
     },
     sidebar: {
       width: "250px",
