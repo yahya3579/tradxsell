@@ -222,6 +222,18 @@ const Navbar = () => {
                   Seller Dashboard
                 </NavLink>
               </li>
+            ) : role === "MainAdmin" ? (
+              <li className="nav-item">
+                <NavLink
+                  to="/admin/dashboard"
+                  onClick={closeMenuOnMobile}
+                  className={({ isActive }) =>
+                    isActive ? "nav-link active" : "nav-link"
+                  }
+                >
+                  Admin Dashboard
+                </NavLink>
+              </li>
             ) : role === "QualityAssurance" ? (
               <li className="nav-item">
                 <NavLink
@@ -394,7 +406,7 @@ const Navbar = () => {
                 Help Center
               </NavLink>
             </li>
-            {role !== "seller" && role !== "QualityAssurance" && (
+            {role !== "seller" && role !== "QualityAssurance" && role !== "MainAdmin" && (
               <li className="nav-item sub-nav-mobile">
                 <NavLink
                   to="/seller-register"
@@ -423,7 +435,7 @@ const Navbar = () => {
           <li>
             <NavLink to="/helpCenter">Help Center</NavLink>
           </li>
-          {role !== "seller" && role !== "QualityAssurance" && (
+          {role !== "seller" && role !== "QualityAssurance" && role !== "MainAdmin" && (
             <>
               <li>
                 <NavLink to="/seller-register">Become a seller</NavLink>

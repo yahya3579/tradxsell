@@ -113,6 +113,7 @@ export default function AdminRFQ() {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
+      marginTop: "20px", // Add margin to move header down from navbar
     },
     toggleButton: {
       display: isMobile && !isSidebarVisible ? "block" : "none",
@@ -276,12 +277,12 @@ export default function AdminRFQ() {
           </button>
         )}
         <div>
-          <Link to="/" style={styles.logo}>
+          <Link to="/" style={{...styles.logo, marginTop: "20px"}}>
             <img src={tradxsell} alt="TRADXSELL" style={{ height: "48px" }} />
           </Link>
           <h2
             style={{
-              margin: "10px 0 10px 13px",
+              margin: "30px 0 10px 13px",
               fontSize: "20px",
               fontWeight: "bold",
             }}

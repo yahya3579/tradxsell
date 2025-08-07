@@ -199,7 +199,7 @@ const QualityAssuranceNavbar = () => {
           </button>
         )}
         <div>
-          <Link to="/" style={styles.logo}>
+          <Link to="/" style={{...styles.logo, marginTop: "20px"}}>
             <img src={tradxsell} alt="TRADXSELL" style={{ height: "58px" }} />
           </Link>
           <h2 style={{ margin: "25px 0 10px 13px", fontSize: "20px", fontWeight: "bold" }}>

@@ -27,6 +27,7 @@
     z-index: 1040;
     overflow-y: auto;
     box-shadow: 3px 0px 5px rgba(0, 0, 0, 0.5);
+    padding-top: 20px; /* Add top padding to create space */
   }
   
   .sidebar.open {

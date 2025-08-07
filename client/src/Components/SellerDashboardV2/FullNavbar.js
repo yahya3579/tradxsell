@@ -166,6 +166,13 @@ export default function FullNavbar() {
           onClick={toggleSidebar}
         ></button>
 
+        {/* Dashboard Title */}
+        <div style={{ padding: "20px 20px 10px 20px", borderBottom: "1px solid rgba(255,255,255,0.2)" }}>
+          <h4 style={{ color: "white", margin: 0, fontSize: "18px", fontWeight: "bold" }}>
+            Dashboard
+          </h4>
+        </div>
+
         <ul className="list-unstyled custom-sidebar-nav">
           {/* Main Links */}
           <li className="ps-0">

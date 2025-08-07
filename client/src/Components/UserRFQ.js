@@ -129,11 +129,10 @@ export default function UserRFQ() {
   };
 
   return (
-    <div className="container py-4">
+    <div className="container py-4" style={{ paddingTop: '100px', marginTop: '120px' }}>
       {/* Toast Container */}
       <Toaster />
       
-      <h2>Request for Quotation (Custom Product)</h2>
       <h2>Request for Quotation (Custom Product)</h2>
       <Form onSubmit={handleSubmit} className="mb-4">
         <Form.Group className="mb-3">
