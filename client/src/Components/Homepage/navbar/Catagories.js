@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Container, Row, Col, ListGroup } from "react-bootstrap";
+import { ListGroup } from "react-bootstrap";
 import "./CategorySection.css"; // Import the CSS file for custom styles
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -181,26 +181,27 @@ const CategorySection = ({setShowCategories}) => {
   }
 
   return (
-    <Container fluid="md" className="my-4 position-absolute left-0 mt-1 z-3" >
-      <Row>
-        {/* Parent Categories */}
-        <Col md={4} className="m-0 p-0 ms-2" >
-          <ListGroup className="scrollable-list">
-            {allItems.map((category) => (
-              <Link to={category?.link} className="link-category" onClick={HideNavbar}>
-                <ListGroup.Item
-                  key={category.id}
-                  
-                  className="list-group-item-action"
-                >
-                  {category.category}
-                </ListGroup.Item>
-              </Link>
-            ))}
-          </ListGroup>
-        </Col>
-      </Row>
-    </Container>
+    <div
+      className="my-4 position-absolute left-0 mt-1 z-3"
+      style={{ width: "auto", display: "inline-block" }}
+    >
+      <div className="m-0 p-0 ms-2" style={{ width: "320px" }}>
+        <ListGroup className="scrollable-list">
+          {allItems.map((category) => (
+            <Link
+              key={category.id}
+              to={category?.link}
+              className="link-category"
+              onClick={HideNavbar}
+            >
+              <ListGroup.Item className="list-group-item-action">
+                {category.category}
+              </ListGroup.Item>
+            </Link>
+          ))}
+        </ListGroup>
+      </div>
+    </div>
   );
 };
 

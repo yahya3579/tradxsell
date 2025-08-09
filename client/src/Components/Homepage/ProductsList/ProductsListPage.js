@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, Filter } from "lucide-react"; // Assuming react-bootstrap-icons is installed
 import { CurrencyContext } from "../../../CurrencyContext";
+import Footer from "../footer/Footer";
 import { useLocation } from "react-router-dom";
 import Categories from "../categories/Categories";
 import "./ProductListPage.css"; // Import your CSS file for styling
@@ -158,8 +159,12 @@ const ProductsListPage = () => {
       >
         {category ? category : "All Products"}
       </h1>
+      {/* Categories carousel/section */}
+      <div style={{ backgroundColor: "white", paddingTop: "1px" }}>
+        <Categories />
+      </div>
 
-      {/* Sub-category dropdown for All Products page */}
+      {/* Sub-category dropdown positioned below categories and above products */}
       {!category && (
         <div className="d-flex justify-content-center mb-4">
           <select
@@ -175,7 +180,6 @@ const ProductsListPage = () => {
           </select>
         </div>
       )}
-      {/* Sub-category dropdown for category page */}
       {category && categoryOptions[category] && (
         <div className="d-flex justify-content-center mb-4">
           <select
@@ -191,11 +195,6 @@ const ProductsListPage = () => {
           </select>
         </div>
       )}
-
-      {/* Search and Filter Bar */}
-      <div style={{ backgroundColor: "white", paddingTop: "1px" }}>
-        <Categories />
-      </div>
       {/* Products Grid */}
       <div className="product-grid">
         {filteredProducts.map((product) => {
@@ -305,6 +304,7 @@ const ProductsListPage = () => {
           );
         })}
       </div>
+      <Footer />
     </div>
   );
 };

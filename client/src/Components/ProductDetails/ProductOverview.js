@@ -156,13 +156,23 @@ export default function ProductOverview() {
       setName(product.name || "");
       setPrice(product.price || 0);
       setImageUrl(product.imageUrl || "");
-      setSize(product.sizes ? product.sizes[0] : ""); // Default to first size, if available
-      setColor(product.colors ? product.colors[0] : ""); // Default to first color, if available
-      setProductId(product?.id);
+      // Require explicit selection from user when options exist
+      setSize("");
+      setColor("");
+      setProductId(product?.id || product?._id);
     }
   }, [product, id]);
 
   const handleAddToCart = async () => {
+    // Enforce selecting size and color if product has options
+    if (Array.isArray(product?.sizes) && product.sizes.length > 0 && !size) {
+      toast.error("Please select a size", { position: "top-center" });
+      return;
+    }
+    if (Array.isArray(product?.colors) && product.colors.length > 0 && !color) {
+      toast.error("Please select a color", { position: "top-center" });
+      return;
+    }
     if(!senderId){
       navigate('/login');
       return;
@@ -332,6 +342,28 @@ export default function ProductOverview() {
 }, [id]);
 
 
+  // Normalize sizes/colors that may be stored as a single comma-separated string in DB
+  const normalizeOptionArray = (value) => {
+    if (!value) return [];
+    if (Array.isArray(value)) {
+      // Some records may have a single element like "21, 24,27"
+      if (value.length === 1 && typeof value[0] === 'string' && value[0].includes(',')) {
+        return value[0]
+          .split(',')
+          .map((s) => String(s).trim())
+          .filter((s) => s.length > 0);
+      }
+      return value.map((s) => String(s).trim()).filter((s) => s.length > 0);
+    }
+    if (typeof value === 'string') {
+      return value
+        .split(',')
+        .map((s) => String(s).trim())
+        .filter((s) => s.length > 0);
+    }
+    return [];
+  };
+
   // Conditional rendering based on loading, error, or product state
   if (loading) {
     return <div>Loading...</div>; // Show loading indicator
@@ -370,6 +402,12 @@ export default function ProductOverview() {
 
   const convertedPrice = (product.price * (rates[currency] || 1)).toFixed(2);
   console.log("converted price", convertedPrice);
+  const normalizedSizes = normalizeOptionArray(product?.sizes);
+  const normalizedColors = normalizeOptionArray(product?.colors);
+  const requiresSize = normalizedSizes.length > 0;
+  const requiresColor = normalizedColors.length > 0;
+  const selectionValid = (!requiresSize || !!size) && (!requiresColor || !!color);
+
   return (
     <div className="container my-5">
       <div className="row">
@@ -456,6 +494,54 @@ export default function ProductOverview() {
         color2={"#ffd700"} // Star color
       />
       <p>Average Rating: {averageRating}</p>
+          {/* Size selector (dropdown from database) */}
+          {requiresSize && (
+            <div className="mb-3">
+              <label htmlFor="size" className="form-label fw-bold">Size:</label>
+              <select
+                id="size"
+                className="form-select"
+                style={{ width: 260, maxWidth: "100%" }}
+                value={size}
+                onChange={(e) => setSize(e.target.value)}
+                multiple={false}
+                required
+              >
+                <option value="">Select size</option>
+                {normalizedSizes.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+              {!size && (
+                <small className="text-muted">Please select one size</small>
+              )}
+            </div>
+          )}
+
+          {/* Color selector (dropdown from database) */}
+          {requiresColor && (
+            <div className="mb-3">
+              <label htmlFor="color" className="form-label fw-bold">Color:</label>
+              <select
+                id="color"
+                className="form-select"
+                style={{ width: 260, maxWidth: "100%" }}
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                multiple={false}
+                required
+              >
+                <option value="">Select color</option>
+                {normalizedColors.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              {!color && (
+                <small className="text-muted">Please select one color</small>
+              )}
+            </div>
+          )}
+
           <div className="mb-4">
             <label htmlFor="quantity" className="form-label fw-bold">
               Quantity:
@@ -497,11 +583,20 @@ export default function ProductOverview() {
               className="btn btn-warning me-2 rounded-pill shadow-sm mt-1"
               style={{ padding: "7px 40px" }}
               onClick={handleAddToCart}
+              disabled={!selectionValid}
             >
               Add to Cart
             </button>
             <button
             onClick={()=> {
+              if (Array.isArray(product?.sizes) && product.sizes.length > 0 && !size) {
+                toast.error("Please select a size", { position: "top-center" });
+                return;
+              }
+              if (Array.isArray(product?.colors) && product.colors.length > 0 && !color) {
+                toast.error("Please select a color", { position: "top-center" });
+                return;
+              }
               if(!senderId){
                 navigate('/login')
               }else{
@@ -510,6 +605,7 @@ export default function ProductOverview() {
             }}
               className="btn btn-success rounded-pill shadow-sm mt-1"
               style={{ padding: "7px 40px" }}
+              disabled={!selectionValid}
             >
               Buy Now
             </button>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Footer from "../Homepage/footer/Footer";
 import "./helpcenter.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -399,6 +400,7 @@ export default function HelpCenter() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

@@ -3,6 +3,7 @@ const router = express.Router();
 const RFQCustom = require('../Schemas/RFQCustom');
 const User = require('../Schemas/UserSchema');
 const sendMail = require('../utils/sendMail');
+const path = require('path');
 
 // User submits a custom RFQ
 router.post('/', async (req, res) => {
@@ -108,7 +109,7 @@ router.post('/', async (req, res) => {
                 .action-button {
                     display: inline-block;
                     background: linear-gradient(135deg, #EF5B2B 0%, #ff6b35 100%);
-                    color: white;
+                    color: #ffffff;
                     text-decoration: none;
                     padding: 12px 25px;
                     border-radius: 25px;
@@ -117,6 +118,10 @@ router.post('/', async (req, res) => {
                     margin: 10px 5px;
                     box-shadow: 0 4px 15px rgba(239, 91, 43, 0.3);
                     transition: all 0.3s ease;
+                }
+                a.action-button, a.action-button:visited, a.action-button:hover, a.action-button:active {
+                    color: #ffffff !important;
+                    text-decoration: none !important;
                 }
                 .action-button:hover {
                     transform: translateY(-2px);
@@ -142,7 +147,7 @@ router.post('/', async (req, res) => {
         <body>
             <div class="email-container">
                 <div class="header">
-                    <div class="logo">🏪 Tradxsell</div>
+                     <div class="logo"><img src="/public/TradxSell.jpg" alt="Tradxsell" style="height:48px"/></div>
                     <p class="header-subtitle">Your Trusted E-commerce Platform</p>
                 </div>
                 
@@ -189,10 +194,10 @@ router.post('/', async (req, res) => {
                     </div>
                     
                     <div style="text-align: center; margin-top: 30px;">
-                        <a href="${process.env.FRONTEND_URL || 'https://tradxsell.com'}/admin/rfq" class="action-button">
+                        <a href="${process.env.FRONTEND_URL || 'https://tradxsell.com'}/admin/rfq" class="action-button" style="color:#ffffff !important;text-decoration:none !important;">
                             🔍 View All RFQs
                         </a>
-                        <a href="${process.env.FRONTEND_URL || 'https://tradxsell.com'}/admin/dashboard" class="action-button">
+                        <a href="${process.env.FRONTEND_URL || 'https://tradxsell.com'}/admin/dashboard" class="action-button" style="color:#ffffff !important;text-decoration:none !important;">
                             📊 Admin Dashboard
                         </a>
                     </div>
@@ -205,7 +210,14 @@ router.post('/', async (req, res) => {
             </div>
         </body>
         </html>
-      `
+      `,
+      attachments: [
+        {
+          filename: 'logo.png',
+          path: path.join(__dirname, '../assets/logo.png'),
+          cid: 'tradxsellLogo'
+        }
+      ]
     });
 
     res.status(201).json({ message: 'RFQ submitted', rfq });
@@ -346,7 +358,7 @@ router.put('/admin/:id/respond', async (req, res) => {
                   .action-button {
                       display: inline-block;
                       background: linear-gradient(135deg, #EF5B2B 0%, #ff6b35 100%);
-                      color: white;
+                       color: #ffffff;
                       text-decoration: none;
                       padding: 12px 25px;
                       border-radius: 25px;
@@ -356,6 +368,10 @@ router.put('/admin/:id/respond', async (req, res) => {
                       box-shadow: 0 4px 15px rgba(239, 91, 43, 0.3);
                       transition: all 0.3s ease;
                   }
+                   a.action-button, a.action-button:visited, a.action-button:hover, a.action-button:active {
+                       color: #ffffff !important;
+                       text-decoration: none !important;
+                   }
                   .action-button:hover {
                       transform: translateY(-2px);
                       box-shadow: 0 6px 20px rgba(239, 91, 43, 0.4);
@@ -380,7 +396,7 @@ router.put('/admin/:id/respond', async (req, res) => {
           <body>
               <div class="email-container">
                   <div class="header">
-                      <div class="logo">🏪 Tradxsell</div>
+                      <div class="logo"><img src="/public/TradxSell.jpg" alt="Tradxsell" style="height:48px"/></div>
                       <p class="header-subtitle">Your Trusted E-commerce Platform</p>
                   </div>
                   
@@ -408,10 +424,10 @@ router.put('/admin/:id/respond', async (req, res) => {
                       </div>
                       
                       <div style="text-align: center; margin-top: 30px;">
-                          <a href="${process.env.FRONTEND_URL || 'https://tradxsell.com'}/user/rfq" class="action-button">
+                          <a href="${process.env.FRONTEND_URL || 'https://tradxsell.com'}/user/rfq" class="action-button" style="color:#ffffff !important;text-decoration:none !important;">
                               📋 View My RFQs
                           </a>
-                          <a href="${process.env.FRONTEND_URL || 'https://tradxsell.com'}/userdashboard" class="action-button">
+                          <a href="${process.env.FRONTEND_URL || 'https://tradxsell.com'}/userdashboard" class="action-button" style="color:#ffffff !important;text-decoration:none !important;">
                               🏠 My Dashboard
                           </a>
                       </div>
@@ -424,7 +440,14 @@ router.put('/admin/:id/respond', async (req, res) => {
               </div>
           </body>
           </html>
-        `
+          `,
+          attachments: [
+            {
+              filename: 'logo.png',
+              path: path.join(__dirname, '../assets/logo.png'),
+              cid: 'tradxsellLogo'
+            }
+          ]
       });
     }
 

@@ -539,9 +539,6 @@ const SellerDashboardV4 = () => {
           </button>
         )}
         <div>
-          <Link to="/" style={{...styles.logo, marginTop: "20px"}}>
-            <img src={tradxsell} alt="TRADXSELL" style={{ height: "48px" }} />
-          </Link>
           <h2 style={{ margin: "30px 0 10px 13px", fontSize: "20px", fontWeight: "bold" }}>
             Dashboard
           </h2>

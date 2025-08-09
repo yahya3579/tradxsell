@@ -1,11 +1,11 @@
 /* Main Navbar Styles */
 .header {
-  position: fixed;
+  position: sticky;
   width: 100%;
   top: 0;
   left: 0;
   background-color: #F0F0F0; /* Match navbar background */
-  z-index: 1000; 
+  z-index: 1000;
 }
 
 .secondNavLinks{

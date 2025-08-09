@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { IoMenu } from "react-icons/io5";
 import { FaShoppingCart } from "react-icons/fa";
@@ -15,6 +15,7 @@ const Navbar = () => {
   const [type, setType] = useState("");
   const [showMenu, setShowMenu] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
+  const categoriesRef = useRef(null);
   const { loggedIn, handleLogout, role } = useContext(AuthContext);
   const { currency, updateCurrency, rates } = useContext(CurrencyContext);
   const { cartCount } = useCart();
@@ -37,6 +38,28 @@ const Navbar = () => {
     };
     HandleLocalProducts();
   }, [type, navigate]);
+
+  // Close categories on outside click (anywhere on the page)
+  useEffect(() => {
+    function handleClickAway(event) {
+      if (!showCategories) return;
+      const container = categoriesRef.current;
+      if (container && !container.contains(event.target)) {
+        setShowCategories(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickAway);
+    document.addEventListener("touchstart", handleClickAway, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handleClickAway);
+      document.removeEventListener("touchstart", handleClickAway);
+    };
+  }, [showCategories]);
+
+  // Close categories on route change
+  useEffect(() => {
+    setShowCategories(false);
+  }, [location.pathname]);
 
   // Show simplified navbar for special roles ONLY on dashboard/admin/quality pages
   if (
@@ -450,9 +473,11 @@ const Navbar = () => {
         </ul>
       </div>
 
-      {/* Conditionally render CategorySection based on hover state */}
+      {/* Conditionally render CategorySection with click-away handling */}
       {showCategories && (
-        <CategorySection setShowCategories={setShowCategories} />
+        <div ref={categoriesRef}>
+          <CategorySection setShowCategories={setShowCategories} />
+        </div>
       )}
     </header>
   );
