@@ -228,6 +228,9 @@ const SellerLogin = () => {
             <button type="submit" className="login-continue-button">
               CONTINUE <FaArrowRight className="login-arrow-icon" />
             </button>
+            <div className="mt-2">
+              <Link to="/forgot-password" className="login-signup-link">Forgot password?</Link>
+            </div>
           </form>
 
           {successMessage && <div className="login-success-alert">{successMessage}</div>}

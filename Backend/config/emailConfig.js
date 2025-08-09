@@ -1,43 +1,67 @@
 const nodemailer = require('nodemailer');
 
-// For production, use real SMTP credentials
-let transporter;
+// Prefer real SMTP if creds are present; else fall back to Mailtrap; else Ethereal
+async function createTransporter() {
+  try {
+    if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+      const transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST,
+        port: Number(process.env.EMAIL_PORT || 587),
+        secure: Number(process.env.EMAIL_PORT) === 465,
+        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD },
+        tls: { rejectUnauthorized: false },
+      });
+      await transporter.verify();
+      console.log('SMTP transporter ready (EMAIL_HOST)');
+      return transporter;
+    }
 
-if (process.env.NODE_ENV === 'production') {
-  transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: process.env.EMAIL_PORT || 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD
-    },
-    tls: {
-      rejectUnauthorized: false // Prevents TLS certificate error
+    if (process.env.MAILTRAP_USER && process.env.MAILTRAP_PASSWORD) {
+      const transporter = nodemailer.createTransport({
+        host: process.env.MAILTRAP_HOST || 'sandbox.smtp.mailtrap.io',
+        port: Number(process.env.MAILTRAP_PORT || 2525),
+        auth: { user: process.env.MAILTRAP_USER, pass: process.env.MAILTRAP_PASSWORD },
+      });
+      await transporter.verify();
+      console.log('Mailtrap transporter ready');
+      return transporter;
     }
-  });
-} else {
-  // For development, you can use services like Mailtrap or Ethereal
-  transporter = nodemailer.createTransport({
-    host: 'sandbox.smtp.mailtrap.io', // Replace with your preferred dev email service
-    port: 2525,
-    auth: {
-      user: process.env.MAILTRAP_USER,
-      pass: process.env.MAILTRAP_PASSWORD
-    }
-  });
+
+    // Ethereal test account (emails go to ethereal inbox preview)
+    const testAccount = await nodemailer.createTestAccount();
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: { user: testAccount.user, pass: testAccount.pass },
+    });
+    await transporter.verify();
+    console.log('Ethereal transporter ready:', testAccount.user);
+    return transporter;
+  } catch (err) {
+    console.error('Failed to initialize email transporter:', err);
+    throw err;
+  }
 }
 
-// Test the transporter
-transporter.verify(function(error, success) {
-  if (error) {
-    console.log('Email transporter error:', error);
-  } else {
-    console.log('Email server is ready to send messages');
-  }
-});
+let transporterPromise = createTransporter();
 
-module.exports = { transporter };
+module.exports = {
+  transporter: {
+    sendMail: async (options) => {
+      const transporter = await transporterPromise;
+      const info = await transporter.sendMail(options);
+      if (nodemailer.getTestMessageUrl && nodemailer.getTestMessageUrl(info)) {
+        console.log('Preview URL:', nodemailer.getTestMessageUrl(info));
+      }
+      return info;
+    },
+    verify: async () => {
+      const transporter = await transporterPromise;
+      return transporter.verify();
+    }
+  }
+};
 
 
 

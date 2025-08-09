@@ -279,6 +279,10 @@ const Login = () => {
               CONTINUE <FaArrowRight className="login-arrow-icon" />
             </button>
 
+            <div className="mt-2">
+              <Link to="/forgot-password" className="login-signup-link">Forgot password?</Link>
+            </div>
+
             <button
               type="button"
               className="login-continue-button"

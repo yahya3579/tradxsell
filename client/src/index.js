@@ -81,6 +81,8 @@ import ManageComplains from "./Components/MainAdminV2/ManageComplains.js";
 import QualityAssurance from "./Components/MainAdminV2/QualityAssurance.js";
 import VerifyEmail from "./Components/Register/VerifyEmail .js";
 import SellerLogin from "./Components/login/SellerLogin.js";
+import ForgotPassword from "./Components/login/ForgotPassword.js";
+import ResetPassword from "./Components/login/ResetPassword.js";
 import AdminRegister from "./Components/MainAdminV2/AdminRegister.js";
 import SellerDashboardV3 from "./Components/SellerDashboardV2/SellerDashboardV3.js";
 import SellerDashboardV4 from "./Components/SellerDashboardV2/SellerDashboardV4.js";
@@ -124,6 +126,9 @@ root.render(
                 {/* <Route path="/loginpage" element={<Login />} /> */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/login/seller" element={<SellerLogin />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password/:token" element={<ResetPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
 
                 <Route path="/register" element={<Register />} />
                 <Route path="/seller-register" element={<SellerRegister />} />

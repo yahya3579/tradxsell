@@ -232,6 +232,62 @@ app.get('/verify-email/:token', async (req, res) => {
   }
 });
 
+// Forgot password - request reset link (email only)
+app.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+    const user = await User.findOne({ email });
+    if (!user) return res.status(200).json({ message: 'If an account exists, an email has been sent' });
+    // Optional: record request time window without tokens
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour window to reset
+    await user.save();
+
+    const resetUrl = `${process.env.FRONTEND_URL || 'https://tradxsell.com'}/reset-password?email=${encodeURIComponent(email)}`;
+
+    await transporter.sendMail({
+      from: 'support@tradxsell.com',
+      to: user.email,
+      subject: 'Password Reset Instructions',
+      html: `
+        <div style="font-family:Segoe UI,Roboto,Arial,sans-serif">
+          <h2>Reset your password</h2>
+          <p>We received a request to reset your password. Click the button below to continue.</p>
+          <p><a href="${resetUrl}" style="display:inline-block;background:#EF5B2B;color:#fff;padding:12px 18px;border-radius:6px;text-decoration:none">Reset Password</a></p>
+          <p>This link will expire in 1 hour. If you did not request this, please ignore this email.</p>
+        </div>
+      `
+    });
+
+    return res.json({ message: 'If an account exists, an email has been sent' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Reset password - update by matching email only
+app.post('/reset-password', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
+
+    const user = await User.findOne({ email, resetPasswordExpires: { $gt: Date.now() } });
+    if (!user) return res.status(400).json({ error: 'Invalid or expired reset request' });
+
+    user.password = password; // will be hashed by pre-save hook
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    return res.json({ message: 'Password has been reset successfully' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
   
 // Resend verification email
 app.post('/resend-verification', async (req, res) => {
