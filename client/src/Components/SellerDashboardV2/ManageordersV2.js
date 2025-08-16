@@ -27,7 +27,7 @@ function ManageOrdersV2() {
         return <Clock size={14} />;
       case 'Approved':
         return <Package size={14} />;
-      case 'Shipped':
+      case 'Cancelled':
         return <CheckCircle size={14} />;
       case 'Delivered':
         return <CheckCircle size={14} />;
@@ -43,8 +43,8 @@ function ManageOrdersV2() {
         return styles.statusPending;
       case 'Approved':
         return styles.statusProcessing;
-      case 'Shipped':
-        return styles.statusShipped;
+      case 'Cancelled':
+        return styles.statusCancelled;
       case 'Delivered':
         return styles.statusDelivered;
       default:
@@ -331,7 +331,7 @@ function ManageOrdersV2() {
                             >
                               <option value="Pending">Pending</option>
                               <option value="Approved">Approved</option>
-                              <option value="Shipped">Shipped</option>
+                              <option value="Cancelled">Cancelled</option>
                               <option value="Delivered">Delivered</option>
                             </select>
                             {/* Current Status Display */}
@@ -671,9 +671,9 @@ const styles = {
     backgroundColor: "#dbeafe",
     color: "#1e40af",
   },
-  statusShipped: {
-    backgroundColor: "#d1fae5",
-    color: "#065f46",
+  statusCancelled: {
+    backgroundColor: "#fee2e2",
+    color: "#991b1b",
   },
   statusDelivered: {
     backgroundColor: "#dcfce7",

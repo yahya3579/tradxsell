@@ -33,6 +33,12 @@ const Dashboard = () => {
   const [orderIdFilter, setOrderIdFilter] = useState('');
   const [isVerified, setIsVerified] = useState(false);
   const [verificationError, setVerificationError] = useState(null);
+  
+  // New states for enhanced order data
+  const [pendingOrders, setPendingOrders] = useState(0);
+  const [approvedOrders, setApprovedOrders] = useState(0);
+  const [monthlySales, setMonthlySales] = useState(new Array(12).fill(0));
+  const [orderStatusData, setOrderStatusData] = useState({});
 
   useEffect(() => {
     if (!userId) return;
@@ -62,21 +68,94 @@ const Dashboard = () => {
   useEffect(() => {
     if (!sellerEmail) return;
     const baseUrl = process.env.REACT_APP_LOCALHOST_URL || 'http://localhost:3001';
-    // Stats
-    fetch(`${baseUrl}/seller/stats?email=${encodeURIComponent(sellerEmail)}`)
+    
+    // Fetch all orders first to calculate real-time stats
+    fetch(`${baseUrl}/orders`)
       .then(res => res.json())
-      .then(data => setStats(data));
-    // Top products
+      .then(allOrdersData => {
+        // Filter orders for this seller
+        const sellerOrders = allOrdersData.filter(order => 
+          order.items.some(item => item.sellerEmail === sellerEmail)
+        );
+        
+        setAllOrders(sellerOrders);
+        setOrders(sellerOrders.slice(0, 10));
+        
+        // Calculate real-time stats - only for delivered orders
+        const deliveredOrders = sellerOrders.filter(order => 
+          order.items.some(item => item.sellerEmail === sellerEmail && item.status === 'Delivered')
+        );
+        
+        const totalSales = deliveredOrders.reduce((total, order) => {
+          const orderTotal = order.items
+            .filter(item => item.sellerEmail === sellerEmail && item.status === 'Delivered')
+            .reduce((sum, item) => sum + (item.price * item.quantity), 0);
+          return total + orderTotal;
+        }, 0);
+        
+        const deliveredOrdersCount = deliveredOrders.length;
+        const avgOrderValue = deliveredOrdersCount > 0 ? totalSales / deliveredOrdersCount : 0;
+        
+        // Update stats with real data - only for delivered orders
+        setStats({
+          totalSalesAmount: totalSales,
+          totalOrders: deliveredOrdersCount,
+          averageOrderValueThisMonth: avgOrderValue
+        });
+        
+        // Calculate orders by status
+        let pendingCount = 0;
+        let approvedCount = 0;
+        
+        sellerOrders.forEach(order => {
+          order.items.forEach(item => {
+            if (item.sellerEmail === sellerEmail) {
+              if (item.status === 'Pending') pendingCount++;
+              if (item.status === 'Approved') approvedCount++;
+            }
+          });
+        });
+        
+        setPendingOrders(pendingCount);
+        setApprovedOrders(approvedCount);
+        
+        // Calculate monthly sales for current year
+        const currentYear = new Date().getFullYear();
+        const monthlyData = new Array(12).fill(0);
+        
+        sellerOrders.forEach(order => {
+          const orderDate = new Date(order.orderDate || order.createdAt);
+          if (orderDate.getFullYear() === currentYear) {
+            const month = orderDate.getMonth();
+            const orderTotal = order.items
+              .filter(item => item.sellerEmail === sellerEmail)
+              .reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            monthlyData[month] += orderTotal;
+          }
+        });
+        
+        setMonthlySales(monthlyData);
+        
+        // Prepare order status data for charts
+        const statusCounts = {};
+        sellerOrders.forEach(order => {
+          order.items.forEach(item => {
+            if (item.sellerEmail === sellerEmail) {
+              const status = item.status || 'Pending';
+              statusCounts[status] = (statusCounts[status] || 0) + 1;
+            }
+          });
+        });
+        setOrderStatusData(statusCounts);
+      })
+      .catch(error => {
+        console.error('Error fetching orders:', error);
+      });
+    
+    // Fetch top products
     fetch(`${baseUrl}/seller/top-products?email=${encodeURIComponent(sellerEmail)}`)
       .then(res => res.json())
       .then(data => setTopProducts(Array.isArray(data) ? data : []));
-    // Orders
-    fetch(`${baseUrl}/seller/orders?email=${encodeURIComponent(sellerEmail)}`)
-      .then(res => res.json())
-      .then(data => {
-        setAllOrders(Array.isArray(data) ? data : []);
-        setOrders(Array.isArray(data) ? data.slice(0, 10) : []);
-      });
   }, [sellerEmail]);
 
   // Filtered orders for modal
@@ -495,26 +574,26 @@ const Dashboard = () => {
           <div className="col-12 col-md-4">
             <StatsCard 
               icon={<TrendingUp />}
-              label="Total Sales"
+              label="Total Sales (Delivered)"
               value={`$${stats.totalSalesAmount?.toLocaleString()}`}
-              subtext="Total order amount received"
+              subtext="Total amount from delivered orders"
               isTotal
             />
           </div>
           <div className="col-12 col-md-4">
             <StatsCard 
               icon={<Package />}
-              label="Total Orders"
+              label="Delivered Orders"
               value={stats.totalOrders}
-              subtext="Total orders received"
+              subtext="Total delivered orders"
             />
           </div>
           <div className="col-12 col-md-4">
             <StatsCard 
               icon={<DollarSign />}
-              label="Average Order Value"
+              label="Average Delivered Order Value"
               value={`$${stats.averageOrderValueThisMonth?.toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
-              subtext="This month"
+              subtext="From delivered orders"
             />
           </div>
         </div>
@@ -537,7 +616,7 @@ const Dashboard = () => {
               </div>
               <div style={{height: '250px'}}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={salesData}>
+                  <LineChart data={monthlySales.map((value, index) => ({ month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][index], sales: value }))}>
                     <XAxis 
                       dataKey="month" 
                       axisLine={false}
@@ -547,7 +626,7 @@ const Dashboard = () => {
                     <YAxis hide />
                     <Line 
                       type="monotone" 
-                      dataKey="value" 
+                      dataKey="sales" 
                       stroke="#ff6b35" 
                       strokeWidth={3}
                       dot={{fill: '#ff6b35', strokeWidth: 2, r: 4}}
@@ -681,6 +760,109 @@ const Dashboard = () => {
             </div>
           </div>
         )}
+        
+        {/* Enhanced Order Status Section */}
+        <div className="row g-4 mt-4">
+          <div className="col-12 col-md-6">
+            <div style={styles.chartCard}>
+              <div style={styles.chartHeader}>
+                <h3 style={styles.chartTitle}>Orders by Status</h3>
+              </div>
+              <div style={{height: '250px'}}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={Object.keys(orderStatusData).map(key => ({ status: key, count: orderStatusData[key] }))}>
+                    <XAxis 
+                      dataKey="status" 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{fontSize: 12, fill: '#666'}}
+                    />
+                    <YAxis hide />
+                    <Line 
+                      type="monotone" 
+                      dataKey="count" 
+                      stroke="#ff6b35" 
+                      strokeWidth={3}
+                      dot={{fill: '#ff6b35', strokeWidth: 2, r: 4}}
+                      activeDot={{r: 6, fill: '#ff6b35'}}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+          
+          <div className="col-12 col-md-6">
+            <div style={styles.chartCard}>
+              <div style={styles.chartHeader}>
+                <h3 style={styles.chartTitle}>Monthly Sales Trend</h3>
+              </div>
+              <div style={{height: '250px'}}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={monthlySales.map((value, index) => ({ month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][index], sales: value }))}>
+                    <XAxis 
+                      dataKey="month" 
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{fontSize: 12, fill: '#666'}}
+                    />
+                    <YAxis hide />
+                    <Line 
+                      type="monotone" 
+                      dataKey="sales" 
+                      stroke="#28a745" 
+                      strokeWidth={3}
+                      dot={{fill: '#28a745', strokeWidth: 2, r: 4}}
+                      activeDot={{r: 6, fill: '#28a745'}}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Order Status Summary Cards */}
+        <div className="row g-4 mt-4">
+          <div className="col-12 col-md-4">
+            <div style={styles.statsCard}>
+              <div style={styles.statLabel}>
+                <span style={styles.iconContainer}>
+                  <Package size={20} color="#ffc107" />
+                </span>
+                Pending Orders
+              </div>
+              <div style={styles.statValue}>{pendingOrders}</div>
+              <div style={styles.statSubtext}>Awaiting approval</div>
+            </div>
+          </div>
+          
+          <div className="col-12 col-md-4">
+            <div style={styles.statsCard}>
+              <div style={styles.statLabel}>
+                <span style={styles.iconContainer}>
+                  <CheckCircle size={20} color="#28a745" />
+                </span>
+                Approved Orders
+              </div>
+              <div style={styles.statValue}>{approvedOrders}</div>
+              <div style={styles.statSubtext}>Ready for processing</div>
+            </div>
+          </div>
+          
+          <div className="col-12 col-md-4">
+            <div style={styles.statsCard}>
+              <div style={styles.statLabel}>
+                <span style={styles.iconContainer}>
+                  <DollarSign size={20} color="#17a2b8" />
+                </span>
+                Total Revenue
+              </div>
+              <div style={styles.statValue}>${stats.totalSalesAmount?.toLocaleString()}</div>
+              <div style={styles.statSubtext}>From all orders</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

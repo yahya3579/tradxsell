@@ -57,6 +57,15 @@ export default function SellerDashboardV2() {
   const [isVerified, setIsVerified] = useState(false);
   const [verificationError, setVerificationError] = useState(null);
 
+  // New states for order data
+  const [orders, setOrders] = useState([]);
+  const [totalSales, setTotalSales] = useState(0);
+  const [averageOrderValue, setAverageOrderValue] = useState(0);
+  const [pendingOrders, setPendingOrders] = useState(0);
+  const [approvedOrders, setApprovedOrders] = useState(0);
+  const [monthlySales, setMonthlySales] = useState(new Array(12).fill(0));
+  const [orderStatusData, setOrderStatusData] = useState({});
+
   const [dailyOrders, setDailyOrders] = useState(new Array(31).fill(0));
 
   // Debug environment variables
@@ -99,6 +108,45 @@ export default function SellerDashboardV2() {
         borderColor: "#EF5B2B",
         backgroundColor: "rgba(76, 175, 80, 0.1)",
         tension: 0.1,
+      },
+    ],
+  };
+
+  // Monthly sales chart data
+  const monthlySalesData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    datasets: [
+      {
+        label: "Monthly Sales ($)",
+        data: monthlySales,
+        backgroundColor: "rgba(239, 91, 43, 0.8)",
+        borderColor: "#EF5B2B",
+        borderWidth: 2,
+        borderRadius: 5,
+      },
+    ],
+  };
+
+  // Order status chart data
+  const orderStatusChartData = {
+    labels: Object.keys(orderStatusData),
+    datasets: [
+      {
+        label: "Orders by Status",
+        data: Object.values(orderStatusData),
+        backgroundColor: [
+          "rgba(239, 91, 43, 0.8)",
+          "rgba(76, 175, 80, 0.8)",
+          "rgba(255, 193, 7, 0.8)",
+          "rgba(33, 150, 243, 0.8)",
+        ],
+        borderColor: [
+          "#EF5B2B",
+          "#4CAF50",
+          "#FFC107",
+          "#2196F3",
+        ],
+        borderWidth: 2,
       },
     ],
   };
@@ -147,6 +195,86 @@ export default function SellerDashboardV2() {
       console.error(errorMessage, error);
       setError(`${errorMessage}: ${error.message}`);
       return null;
+    }
+  };
+
+  // Function to fetch and process orders data
+  const fetchOrdersData = async () => {
+    if (!sellerEmail) return;
+    
+    try {
+      // Fetch all orders
+      const response = await axios.get(`${process.env.REACT_APP_LOCALHOST_URL}/orders`);
+      const allOrders = response.data;
+      
+      // Filter orders for this seller
+      const sellerOrders = allOrders.filter(order => 
+        order.items.some(item => item.sellerEmail === sellerEmail)
+      );
+      
+      setOrders(sellerOrders);
+      
+      // Calculate total sales
+      const sales = sellerOrders.reduce((total, order) => {
+        const orderTotal = order.items
+          .filter(item => item.sellerEmail === sellerEmail)
+          .reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        return total + orderTotal;
+      }, 0);
+      setTotalSales(sales);
+      
+      // Calculate average order value
+      const avgValue = sellerOrders.length > 0 ? sales / sellerOrders.length : 0;
+      setAverageOrderValue(avgValue);
+      
+      // Count orders by status
+      let pendingCount = 0;
+      let approvedCount = 0;
+      
+      sellerOrders.forEach(order => {
+        order.items.forEach(item => {
+          if (item.sellerEmail === sellerEmail) {
+            if (item.status === 'Pending') pendingCount++;
+            if (item.status === 'Approved') approvedCount++;
+          }
+        });
+      });
+      
+      setPendingOrders(pendingCount);
+      setApprovedOrders(approvedCount);
+      
+      // Calculate monthly sales for the current year
+      const currentYear = new Date().getFullYear();
+      const monthlyData = new Array(12).fill(0);
+      
+      sellerOrders.forEach(order => {
+        const orderDate = new Date(order.orderDate || order.createdAt);
+        if (orderDate.getFullYear() === currentYear) {
+          const month = orderDate.getMonth();
+          const orderTotal = order.items
+            .filter(item => item.sellerEmail === sellerEmail)
+            .reduce((sum, item) => sum + (item.price * item.quantity), 0);
+          monthlyData[month] += orderTotal;
+        }
+      });
+      
+      setMonthlySales(monthlyData);
+      
+      // Prepare order status data for charts
+      const statusCounts = {};
+      sellerOrders.forEach(order => {
+        order.items.forEach(item => {
+          if (item.sellerEmail === sellerEmail) {
+            const status = item.status || 'Pending';
+            statusCounts[status] = (statusCounts[status] || 0) + 1;
+          }
+        });
+      });
+      setOrderStatusData(statusCounts);
+      
+    } catch (error) {
+      console.error('Error fetching orders data:', error);
+      setError('Failed to fetch orders data');
     }
   };
 
@@ -319,6 +447,9 @@ export default function SellerDashboardV2() {
     };
 
     fetchData();
+    
+    // Also fetch orders data
+    fetchOrdersData();
   }, [sellerEmail]);
 
   useEffect(() => {
@@ -697,7 +828,11 @@ export default function SellerDashboardV2() {
                     )}
 
                     <p className="card-text card-text-value">{totalOrders}</p>
-                    <p className="card-text card-text-custom">Total Count</p>
+                    <p className="card-text card-text-custom">Total Orders</p>
+                    <div className="d-flex justify-content-between mb-2">
+                      <span className="badge bg-warning text-dark">Pending: {pendingOrders}</span>
+                      <span className="badge bg-success">Approved: {approvedOrders}</span>
+                    </div>
                     <div className="chart-wrapper">
                       <Line data={lineData} options={lineOptions} />
                     </div>
@@ -735,10 +870,16 @@ export default function SellerDashboardV2() {
                           </div>
                         )}
                         <p className="card-text card-text-value">
-                          {totalProducts}
+                          ${totalSales.toFixed(2)}
                         </p>
                         <p className="card-text card-text-custom">
                           Total Sales
+                        </p>
+                        <p className="card-text card-text-value" style={{ fontSize: '0.9rem', color: '#666' }}>
+                          ${averageOrderValue.toFixed(2)}
+                        </p>
+                        <p className="card-text card-text-custom" style={{ fontSize: '0.8rem' }}>
+                          Avg Order Value
                         </p>
                       </div>
                     </div>
@@ -938,6 +1079,50 @@ export default function SellerDashboardV2() {
                       </div>
                     </Link>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Additional Charts Section */}
+      <section className="container mt-4">
+        <div className="row">
+          <div className="col-md-6 mb-4">
+            <div className="card card-custom h-100">
+              <div className="card-body card-body-custom">
+                <h5 className="card-title card-title-custom">Monthly Sales Trend</h5>
+                <div className="chart-wrapper" style={{ height: '300px' }}>
+                  <Bar data={monthlySalesData} options={{
+                    ...options,
+                    plugins: {
+                      tooltip: {
+                        callbacks: {
+                          label: (context) => `Sales: $${context.raw.toFixed(2)}`,
+                        },
+                      },
+                    },
+                  }} />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-6 mb-4">
+            <div className="card card-custom h-100">
+              <div className="card-body card-body-custom">
+                <h5 className="card-title card-title-custom">Orders by Status</h5>
+                <div className="chart-wrapper" style={{ height: '300px' }}>
+                  <Bar data={orderStatusChartData} options={{
+                    ...options,
+                    plugins: {
+                      tooltip: {
+                        callbacks: {
+                          label: (context) => `Orders: ${context.raw}`,
+                        },
+                      },
+                    },
+                  }} />
                 </div>
               </div>
             </div>
