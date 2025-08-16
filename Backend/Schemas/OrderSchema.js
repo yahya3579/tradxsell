@@ -12,7 +12,7 @@ const orderSchema = new mongoose.Schema({
             quantity: { type: Number, default: 1 },
             color: { type: String, required: true },
             size: { type: String, required: true },
-            status: { type: String, enum: ['Pending', 'Shipped', 'Delivered'], default: 'Pending' },
+            status: { type: String, enum: ['Pending', 'Shipped', 'Delivered', 'Approved'], default: 'Pending' },
             sellerEmail: { type: String, required: true }
         }
     ],
