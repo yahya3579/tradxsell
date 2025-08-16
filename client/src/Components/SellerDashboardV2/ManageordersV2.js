@@ -318,6 +318,19 @@ function ManageOrdersV2() {
                               })}
                             </span>
                           </div>
+                          {/* Product Attributes */}
+                          <div style={styles.infoRow}>
+                            <div style={styles.attributeIcon}>
+                              <div style={styles.colorDot}></div>
+                            </div>
+                            <span style={styles.infoText}>Color: {order.items[0]?.color || "N/A"}</span>
+                          </div>
+                          <div style={styles.infoRow}>
+                            <div style={styles.attributeIcon}>
+                              <Package size={16} color="#6b7280" />
+                            </div>
+                            <span style={styles.infoText}>Size: {order.items[0]?.size || "N/A"}</span>
+                          </div>
                         </div>
 
                         {/* Status and Price */}
@@ -346,9 +359,15 @@ function ManageOrdersV2() {
                               </div>
                             </div>
                           </div>
-                          <div style={styles.price}>
-                            <DollarSign size={16} />
-                            <span>{order.items[0]?.price || "0.00"}</span>
+                          <div style={styles.priceQuantitySection}>
+                            <div style={styles.price}>
+                              <DollarSign size={16} />
+                              <span>${order.items[0]?.price || "0.00"}</span>
+                            </div>
+                            <div style={styles.quantity}>
+                              <Package size={16} />
+                              <span>Qty: {order.items[0]?.quantity || "1"}</span>
+                            </div>
                           </div>
                         </div>
 
@@ -615,6 +634,21 @@ const styles = {
     color: "#6b7280",
   },
 
+  attributeIcon: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "16px",
+    height: "16px",
+  },
+  colorDot: {
+    width: "12px",
+    height: "12px",
+    borderRadius: "50%",
+    backgroundColor: "#6b7280",
+    border: "1px solid #d1d5db",
+  },
+
   // Order Meta
   orderMeta: {
     display: "flex",
@@ -686,6 +720,23 @@ const styles = {
     fontSize: "16px",
     fontWeight: "600",
     color: "#f2582c",
+  },
+  quantity: {
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
+    fontSize: "14px",
+    fontWeight: "500",
+    color: "#6b7280",
+    backgroundColor: "#f3f4f6",
+    padding: "4px 8px",
+    borderRadius: "6px",
+  },
+  priceQuantitySection: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    alignItems: "flex-end",
   },
 
   // Actions
