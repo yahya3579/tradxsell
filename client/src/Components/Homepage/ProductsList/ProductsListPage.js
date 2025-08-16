@@ -44,6 +44,7 @@ const ProductsListPage = () => {
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [subCategory, setSubCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const { currency, rates } = useContext(CurrencyContext);
 
   // Detect category from URL (e.g., /category/Jewelry, Eyewear)
@@ -99,7 +100,13 @@ const ProductsListPage = () => {
     }
   }, [location.state]);
 
-  // Filter products by search, type, and status only (category/subCategory handled by backend)
+  // Handle subcategory selection from Categories component
+  const handleSubCategoryChange = (category, subCategory) => {
+    setSelectedCategory(category);
+    setSubCategory(subCategory);
+  };
+
+  // Filter products by search, type, status, and subcategory
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name
       .toLowerCase()
@@ -108,7 +115,9 @@ const ProductsListPage = () => {
       typeFilter === "" || product.type === typeFilter.toLowerCase();
     const matchesStatus =
       statusFilter === "" || product.status === statusFilter.toLowerCase();
-    return matchesSearch && matchesType && matchesStatus;
+    const matchesSubCategory = 
+      subCategory === "" || product.subCategory === subCategory;
+    return matchesSearch && matchesType && matchesStatus && matchesSubCategory;
   });
 
   if (loading) {
@@ -127,8 +136,15 @@ const ProductsListPage = () => {
   if (products.length === 0) {
     return (
       <div className="d-flex flex-column justify-content-center align-items-center">
-        <h3 className="mt-3 mb-3">All Products</h3>
-        <p style={{ textAlign: "center" }}>No products found.</p>
+        <h3 className="mt-3 mb-3">
+          {category ? category : "All Products"}
+          {subCategory && ` - ${subCategory}`}
+        </h3>
+        <p style={{ textAlign: "center" }}>
+          {subCategory 
+            ? `No products found for subcategory "${subCategory}"` 
+            : "No products found."}
+        </p>
       </div>
     );
   }
@@ -144,122 +160,140 @@ const ProductsListPage = () => {
         }}
       >
         {category ? category : "All Products"}
+        {subCategory && ` - ${subCategory}`}
       </h1>
       {/* Categories carousel/section */}
       <div style={{ backgroundColor: "white", paddingTop: "1px" }}>
-        <Categories />
+        <Categories 
+          onSubCategoryChange={handleSubCategoryChange}
+          selectedCategory={selectedCategory}
+          selectedSubCategory={subCategory}
+        />
       </div>
 
 
       {/* Products Grid */}
-      <div className="product-grid">
-        {filteredProducts.map((product) => {
-          const convertedPrice = (
-            product.price * (rates[currency] || 1)
-          ).toFixed(2);
+      {filteredProducts.length === 0 ? (
+        <div className="d-flex flex-column justify-content-center align-items-center" style={{ padding: "40px" }}>
+          <h4 style={{ color: "#666", marginBottom: "10px" }}>
+            {subCategory 
+              ? `No products found for subcategory "${subCategory}"` 
+              : "No products match your current filters"}
+          </h4>
+          <p style={{ color: "#999", textAlign: "center" }}>
+            Try adjusting your filters or selecting a different subcategory.
+          </p>
+        </div>
+      ) : (
+        <div className="product-grid">
+          {filteredProducts.map((product) => {
+            const convertedPrice = (
+              product.price * (rates[currency] || 1)
+            ).toFixed(2);
 
-          // Define these variables outside the JSX
-          const fullImageUrl = product?.imageUrl
-            ? `${process.env.REACT_APP_LOCALHOST_URL}${product.imageUrl}`
-            : null;
+            // Define these variables outside the JSX
+            const fullImageUrl = product?.imageUrl
+              ? `${process.env.REACT_APP_LOCALHOST_URL}${product.imageUrl}`
+              : null;
 
-          const imageUrl =
-            !fullImageUrl || failedImageUrls.has(fullImageUrl)
-              ? "https://via.placeholder.com/250x180?text=No+Image+Available"
-              : fullImageUrl;
-          return (
-            <Link
-              to={`/productoverview/${product._id}`}
-              key={product._id}
-              style={{ textDecoration: "none" }}
-            >
-              <div
-                style={{
-                  backgroundColor: "#ffffff",
-
-                  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-                  overflow: "hidden",
-                  transition: "transform 0.3s, box-shadow 0.3s",
-                  cursor: "pointer",
-                  textAlign: "center",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-5px)";
-                  e.currentTarget.style.boxShadow =
-                    "0 8px 20px rgba(0, 0, 0, 0.15)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow =
-                    "0 4px 10px rgba(0, 0, 0, 0.1)";
-                }}
+            const imageUrl =
+              !fullImageUrl || failedImageUrls.has(fullImageUrl)
+                ? "https://via.placeholder.com/250x180?text=No+Image+Available"
+                : fullImageUrl;
+            return (
+              <Link
+                to={`/productoverview/${product._id}`}
+                key={product._id}
+                style={{ textDecoration: "none" }}
               >
-                <img
-                  src={imageUrl}
-                  alt={product.name}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src =
-                      "https://placehold.co/250x180?text=No+Image+Available";
-                    // Remember this URL as a failed one to avoid future attempts
-                    if (fullImageUrl) failedImageUrls.add(fullImageUrl);
-                  }}
+                <div
                   style={{
-                    width: "100%",
-                    height: "290px",
-                    objectFit: "cover",
-                    borderBottom: "1px solid #e0e0e0",
-                  }}
-                />
+                    backgroundColor: "#ffffff",
 
-                <div style={{ padding: "15px" }}>
-                  <h2
-                    style={{
-                      fontSize: "18px",
-                      fontWeight: "600",
-                      margin: "2px 0",
-                      color: "#FB5420",
+                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+                    overflow: "hidden",
+                    transition: "transform 0.3s, box-shadow 0.3s",
+                    cursor: "pointer",
+                    textAlign: "center",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-5px)";
+                    e.currentTarget.style.boxShadow =
+                      "0 8px 20px rgba(0, 0, 0, 0.15)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow =
+                      "0 4px 10px rgba(0, 0, 0, 0.1)";
+                  }}
+                >
+                  <img
+                    src={imageUrl}
+                    alt={product.name}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src =
+                        "https://placehold.co/250x180?text=No+Image+Available";
+                      // Remember this URL as a failed one to avoid future attempts
+                      if (fullImageUrl) failedImageUrls.add(fullImageUrl);
                     }}
-                  >
-                    {product.name}
-                  </h2>
-                  <div
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      padding: "10px 20px 10px 0px",
+                      width: "100%",
+                      height: "290px",
+                      objectFit: "cover",
+                      borderBottom: "1px solid #e0e0e0",
                     }}
-                  >
-                    <p
+                  />
+
+                  <div style={{ padding: "15px" }}>
+                    <h2
                       style={{
-                        fontSize: "14px",
-                        fontWeight: "400",
-                        color: "#9A9797",
-                        margin: "5px 0",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        display: "-webkit-box",
-                        WebkitBoxOrient: "vertical",
-                        WebkitLineClamp: "2",
+                        fontSize: "18px",
+                        fontWeight: "600",
+                        margin: "2px 0",
+                        color: "#FB5420",
                       }}
                     >
-                      MOQ: {product.quantity}
-                    </p>
-                    <p
+                      {product.name}
+                    </h2>
+                    <div
                       style={{
-                        fontSize: "16px",
-                        fontWeight: "500",
-                        color: "#1E1E1E",
-                        margin: "5px 0",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        padding: "10px 20px 10px 0px",
                       }}
-                    >{`${currency} ${convertedPrice}`}</p>
+                    >
+                      <p
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: "400",
+                          color: "#9A9797",
+                          margin: "5px 0",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          display: "-webkit-box",
+                          WebkitBoxOrient: "vertical",
+                          WebkitLineClamp: "2",
+                        }}
+                      >
+                        MOQ: {product.quantity}
+                      </p>
+                      <p
+                        style={{
+                          fontSize: "16px",
+                          fontWeight: "500",
+                          color: "#1E1E1E",
+                          margin: "5px 0",
+                        }}
+                      >{`${currency} ${convertedPrice}`}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
       <Footer />
     </div>
   );

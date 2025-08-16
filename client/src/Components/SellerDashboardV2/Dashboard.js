@@ -33,7 +33,7 @@ const Dashboard = () => {
   const [orderIdFilter, setOrderIdFilter] = useState('');
   const [isVerified, setIsVerified] = useState(false);
   const [verificationError, setVerificationError] = useState(null);
-  
+
   // New states for enhanced order data
   const [pendingOrders, setPendingOrders] = useState(0);
   const [approvedOrders, setApprovedOrders] = useState(0);
@@ -74,9 +74,27 @@ const Dashboard = () => {
       .then(res => res.json())
       .then(allOrdersData => {
         // Filter orders for this seller
-        const sellerOrders = allOrdersData.filter(order => 
-          order.items.some(item => item.sellerEmail === sellerEmail)
-        );
+        console.log('=== FILTERING ORDERS ===');
+        console.log('Current sellerEmail:', sellerEmail);
+        console.log('All Orders Count:', allOrdersData.length);
+        
+        const sellerOrders = allOrdersData.filter(order => {
+          const hasSellerItem = order.items.some(item => {
+            console.log(`Checking item sellerEmail: "${item.sellerEmail}" vs current: "${sellerEmail}"`);
+            const match = item.sellerEmail === sellerEmail;
+            console.log(`Match: ${match}`);
+            return match;
+          });
+          
+          if (hasSellerItem) {
+            console.log(`✅ Order ${order._id} contains seller items`);
+          }
+          
+          return hasSellerItem;
+        });
+        
+        console.log('Filtered Seller Orders Count:', sellerOrders.length);
+        console.log('Filtered Seller Orders:', sellerOrders);
         
         setAllOrders(sellerOrders);
         setOrders(sellerOrders.slice(0, 10));
@@ -147,15 +165,38 @@ const Dashboard = () => {
           });
         });
         setOrderStatusData(statusCounts);
+        
+        // Top products by total ordered quantity from orders (seller-specific)
+        const productQuantityMap = {};
+        sellerOrders.forEach(order => {
+          order.items.forEach(item => {
+            if (item.sellerEmail === sellerEmail) {
+              const productId = item.productId;
+              if (!productQuantityMap[productId]) {
+                productQuantityMap[productId] = {
+                  productId: productId,
+                  name: item.name || 'Unknown Product',
+                  imageUrl: item.imageUrl || '',
+                  category: item.category || '',
+                  totalQuantity: 0,
+                  totalRevenue: 0
+                };
+              }
+              const itemQuantity = parseInt(item.quantity) || 0;
+              const itemPrice = parseFloat(item.price) || 0;
+              productQuantityMap[productId].totalQuantity += itemQuantity;
+              productQuantityMap[productId].totalRevenue += itemQuantity * itemPrice;
+            }
+          });
+        });
+        const topProductsByQuantity = Object.values(productQuantityMap)
+          .sort((a, b) => b.totalQuantity - a.totalQuantity)
+          .slice(0, 3);
+        setTopProducts(topProductsByQuantity);
       })
       .catch(error => {
         console.error('Error fetching orders:', error);
       });
-    
-    // Fetch top products
-    fetch(`${baseUrl}/seller/top-products?email=${encodeURIComponent(sellerEmail)}`)
-      .then(res => res.json())
-      .then(data => setTopProducts(Array.isArray(data) ? data : []));
   }, [sellerEmail]);
 
   // Filtered orders for modal
@@ -604,15 +645,6 @@ const Dashboard = () => {
             <div style={styles.chartCard}>
               <div style={styles.chartHeader}>
                 <h3 style={styles.chartTitle}>Sales Overtime</h3>
-                <div style={styles.chartControls}>
-                  <select style={styles.dropdown}>
-                    <option>Revenue</option>
-                  </select>
-                  <select style={styles.dropdown}>
-                    <option>Order</option>
-                  </select>
-                  <div style={styles.menuIcon}>☰</div>
-                </div>
               </div>
               <div style={{height: '250px'}}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -647,19 +679,19 @@ const Dashboard = () => {
               </div>
               {topProducts.length === 0 && <div>No sales yet.</div>}
               {topProducts.map((item, idx) => (
-                <div style={styles.productItem} key={item.product?.id || idx}>
+                <div style={styles.productItem} key={item.productId || idx}>
                   <img 
-                    src={item.product?.imageUrl ? `${process.env.REACT_APP_LOCALHOST_URL}${item.product.imageUrl}` : 'https://via.placeholder.com/48'}
-                    alt={item.product?.name || 'Product'} 
+                    src={item.imageUrl ? `${process.env.REACT_APP_LOCALHOST_URL}${item.imageUrl}` : 'https://via.placeholder.com/48'}
+                    alt={item.name || 'Product'} 
                     style={styles.productImage}
                   />
                   <div style={styles.productInfo}>
-                    <div style={styles.productName}>{item.product?.name || 'Product'}</div>
-                    <div style={styles.productCategory}>{item.product?.category || ''}</div>
+                    <div style={styles.productName}>{item.name || 'Product'}</div>
+                    <div style={styles.productCategory}>{item.category || ''}</div>
                   </div>
                   <div style={styles.productStats}>
-                    <div style={styles.productQuantity}>{item.quantity} sold</div>
-                    <div style={styles.productStatus}>${item.revenue?.toLocaleString()}</div>
+                    <div style={styles.productQuantity}>{item.totalQuantity} sold</div>
+                    <div style={styles.productStatus}>${item.totalRevenue?.toLocaleString()}</div>
                   </div>
                 </div>
               ))}

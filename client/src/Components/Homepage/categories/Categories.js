@@ -218,11 +218,9 @@ const allItems = [
   },
 ];
 
-const Categories = () => {
+const Categories = ({ onSubCategoryChange, selectedCategory, selectedSubCategory }) => {
   const [itemsPerSlide, setItemsPerSlide] = useState(6);
   const [groupedItems, setGroupedItems] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedSubCategory, setSelectedSubCategory] = useState("");
 
   // Function to determine items per slide based on screen width
   const updateItemsPerSlide = () => {
@@ -279,7 +277,7 @@ const Categories = () => {
             className="form-select"
             style={{ width: 260, maxWidth: "100%" }}
             value={selectedSubCategory}
-            onChange={e => setSelectedSubCategory(e.target.value)}
+            onChange={e => onSubCategoryChange(selectedCategory, e.target.value)}
           >
             <option value="">Select Sub-Category</option>
             {categoryOptions[selectedCategory]?.map(sub => (
@@ -302,8 +300,7 @@ const Categories = () => {
                   <div
                     style={{ textDecoration: "none", color: "black", cursor: "pointer" }}
                     onClick={() => {
-                      setSelectedCategory(item.category);
-                      setSelectedSubCategory("");
+                      onSubCategoryChange(item.category, "");
                     }}
                   >
                     <div className="category-icon-wrapper">
@@ -319,6 +316,12 @@ const Categories = () => {
       </Carousel>
     </div>
   );
+};
+
+Categories.defaultProps = {
+  onSubCategoryChange: () => {},
+  selectedCategory: "",
+  selectedSubCategory: ""
 };
 
 export default Categories;
