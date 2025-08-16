@@ -3,9 +3,11 @@ import axios from 'axios';
 import { toast, Toaster } from "react-hot-toast";
 import { AuthContext } from '../AuthContext.js';
 import { Table, Badge, Spinner, Form, Button, Alert } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 export default function UserRFQ() {
   const { id } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     productName: '',
     description: '',
@@ -23,7 +25,10 @@ export default function UserRFQ() {
   const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setFetching(false);
+      return;
+    }
     setFetching(true);
     axios.get(`${process.env.REACT_APP_LOCALHOST_URL}/rfq/custom/user/${id}`)
       .then(res => {
@@ -134,46 +139,63 @@ export default function UserRFQ() {
       <Toaster />
       
       <h2>Request for Quotation (Custom Product)</h2>
-      <Form onSubmit={handleSubmit} className="mb-4">
-        <Form.Group className="mb-3">
-          <Form.Label>Product Name</Form.Label>
-          <Form.Control name="productName" value={form.productName} onChange={handleChange} required />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Description</Form.Label>
-          <Form.Control name="description" value={form.description} onChange={handleChange} as="textarea" rows={2} placeholder="Describe your requirements (e.g. mouse with RGB colors)" />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Quantity</Form.Label>
-          <Form.Control name="quantity" type="number" min={1} value={form.quantity} onChange={handleChange} required />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>City</Form.Label>
-          <Form.Control name="city" value={form.city} onChange={handleChange} required />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Country</Form.Label>
-          <Form.Control name="country" value={form.country} onChange={handleChange} required />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Delivery Period</Form.Label>
-          <Form.Control name="deliveryPeriod" value={form.deliveryPeriod} onChange={handleChange} required placeholder="e.g. 2 weeks, 2024-08-01 to 2024-08-15" />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Target Price (per unit)</Form.Label>
-          <Form.Control name="targetPrice" type="number" min={0} value={form.targetPrice} onChange={handleChange} required />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Additional Notes</Form.Label>
-          <Form.Control name="notes" value={form.notes} onChange={handleChange} as="textarea" rows={2} />
-        </Form.Group>
-        {error && <Alert variant="danger">{error}</Alert>}
-        {success && <Alert variant="success">{success}</Alert>}
-        <Button type="submit" disabled={loading}>{loading ? 'Submitting...' : 'Submit RFQ'}</Button>
-      </Form>
+             {!id ? (
+         <div className="text-center py-4">
+           <p className="text-muted">Please login to submit RFQ.</p>
+                       <button 
+              className="btn px-4 py-2" 
+              style={{ backgroundColor: '#FF8C00', color: 'white', border: 'none' }}
+              onClick={() => navigate('/login')}
+            >
+              Login
+            </button>
+         </div>
+      ) : (
+        <Form onSubmit={handleSubmit} className="mb-4">
+          <Form.Group className="mb-3">
+            <Form.Label>Product Name</Form.Label>
+            <Form.Control name="productName" value={form.productName} onChange={handleChange} required />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Description</Form.Label>
+            <Form.Control name="description" value={form.description} onChange={handleChange} as="textarea" rows={2} placeholder="Describe your requirements (e.g. mouse with RGB colors)" />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Quantity</Form.Label>
+            <Form.Control name="quantity" type="number" min={1} value={form.quantity} onChange={handleChange} required />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>City</Form.Label>
+            <Form.Control name="city" value={form.city} onChange={handleChange} required />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Country</Form.Label>
+            <Form.Control name="country" value={form.country} onChange={handleChange} required />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Delivery Period</Form.Label>
+            <Form.Control name="deliveryPeriod" value={form.deliveryPeriod} onChange={handleChange} required placeholder="e.g. 2 weeks, 2024-08-01 to 2024-08-15" />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Target Price (per unit)</Form.Label>
+            <Form.Control name="targetPrice" type="number" min={0} value={form.targetPrice} onChange={handleChange} required />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Additional Notes</Form.Label>
+            <Form.Control name="notes" value={form.notes} onChange={handleChange} as="textarea" rows={2} />
+          </Form.Group>
+          {error && <Alert variant="danger">{error}</Alert>}
+          {success && <Alert variant="success">{success}</Alert>}
+          <Button type="submit" disabled={loading}>{loading ? 'Submitting...' : 'Submit RFQ'}</Button>
+        </Form>
+      )}
 
       <h3>Your RFQ Requests</h3>
-      {fetching ? (
+      {!id ? (
+        <div className="text-center py-4">
+          <p className="text-muted">Please login to check your RFQ requests.</p>
+        </div>
+      ) : fetching ? (
         <Spinner animation="border" />
       ) : rfqs.length === 0 ? (
         <div>No RFQ requests found.</div>

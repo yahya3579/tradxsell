@@ -60,39 +60,25 @@ const ProductsListPage = () => {
     )
   );
 
-  // Fetch products from backend when category or subCategory changes
+  // Fetch products from backend when category changes
   useEffect(() => {
     setLoading(true);
     if (!category) {
-      // All Products page: fetch by sub-category if selected, else fetch all
-      if (subCategory) {
-        fetch(`${process.env.REACT_APP_LOCALHOST_URL}/products/subcategory?name=${encodeURIComponent(subCategory)}`)
-          .then(res => res.json())
-          .then(data => {
-            setProducts(Array.isArray(data) ? data : []);
-            setLoading(false);
-          })
-          .catch(err => {
-            setProducts([]);
-            setLoading(false);
-          });
-      } else {
-        fetch(`${process.env.REACT_APP_LOCALHOST_URL}/products/all/random`)
-          .then(res => res.json())
-          .then(data => {
-            setProducts(Array.isArray(data) ? data : []);
-            setLoading(false);
-          })
-          .catch(err => {
-            setProducts([]);
-            setLoading(false);
-          });
-      }
+      // All Products page: fetch all products
+      fetch(`${process.env.REACT_APP_LOCALHOST_URL}/products/all/random`)
+        .then(res => res.json())
+        .then(data => {
+          setProducts(Array.isArray(data) ? data : []);
+          setLoading(false);
+        })
+        .catch(err => {
+          setProducts([]);
+          setLoading(false);
+        });
     } else {
-      // Category present: fetch by category (and subCategory)
+      // Category present: fetch by category only
       const params = new URLSearchParams();
       params.append("name", category.toLowerCase());
-      if (subCategory) params.append("subCategory", subCategory);
       fetch(`${process.env.REACT_APP_LOCALHOST_URL}/products/category?${params.toString()}`)
         .then(res => res.json())
         .then(data => {
@@ -104,7 +90,7 @@ const ProductsListPage = () => {
           setLoading(false);
         });
     }
-  }, [category, subCategory]);
+  }, [category]);
 
   const failedImageUrls = new Set();
   useEffect(() => {
@@ -164,37 +150,7 @@ const ProductsListPage = () => {
         <Categories />
       </div>
 
-      {/* Sub-category dropdown positioned below categories and above products */}
-      {!category && (
-        <div className="d-flex justify-content-center mb-4">
-          <select
-            className="form-select"
-            style={{ width: 260, maxWidth: "100%" }}
-            value={subCategory}
-            onChange={e => setSubCategory(e.target.value)}
-          >
-            <option value="">All Sub-Categories</option>
-            {allSubCategories.map(sub => (
-              <option key={sub} value={sub}>{sub}</option>
-            ))}
-          </select>
-        </div>
-      )}
-      {category && categoryOptions[category] && (
-        <div className="d-flex justify-content-center mb-4">
-          <select
-            className="form-select"
-            style={{ width: 260, maxWidth: "100%" }}
-            value={subCategory}
-            onChange={e => setSubCategory(e.target.value)}
-          >
-            <option value="">All Sub-Categories</option>
-            {categoryOptions[category].map(sub => (
-              <option key={sub} value={sub}>{sub}</option>
-            ))}
-          </select>
-        </div>
-      )}
+
       {/* Products Grid */}
       <div className="product-grid">
         {filteredProducts.map((product) => {

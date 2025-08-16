@@ -66,13 +66,11 @@ export default function ProductWithButton() {
                     {/* Image on the left */}
                     <div className="me-3">
                       <img
-                        src={product.imgUrl ? `${process.env.REACT_APP_LOCALHOST_URL}${product.imageUrl}` : "https://placehold.co/250x180?text=No+Image+Available"}
+                        src={product.imageUrl ? `${process.env.REACT_APP_LOCALHOST_URL}${product.imageUrl}` : "https://placehold.co/250x180?text=No+Image+Available"}
                         onError={(e) => {
                           e.target.onerror = null;
                           e.target.src =
                             "https://placehold.co/250x180?text=No+Image+Available";
-                          // Remember this URL as a failed one to avoid future attempts
-
                         }}
                         className="rounded"
                         style={{
