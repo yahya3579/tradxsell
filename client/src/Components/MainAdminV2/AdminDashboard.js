@@ -70,7 +70,7 @@ const AdminDashboard = () => {
       height: "100vh",
       backgroundColor: "#f3f3f3",
       position: "relative",
-      paddingTop: "60px", // Reduced padding to prevent overlap with fixed navbar
+      paddingTop: "0", // Remove padding to touch main navbar
     },
     sidebar: {
       width: "250px",
@@ -121,7 +121,7 @@ const AdminDashboard = () => {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      marginTop: "20px", // Add margin to move header down from navbar
+      marginTop: "0", // Remove margin to touch main navbar
     },
     toggleButton: {
       display: isMobile && !isSidebarVisible ? "block" : "none",

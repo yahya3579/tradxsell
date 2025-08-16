@@ -70,20 +70,13 @@ const InventoryManagement = () => {
   }, [sellerEmail]);
 
 
-  const totalQuantity = productsInventory.reduce((total, product) => {
-    return total + product.quantity; // Accumulate the quantity
-  }, 0);
+  const totalProductsCount = productsInventory.length; // Count total products
 
   const ApprovedProducts = productsInventory.filter((product)=> product.status === "approved");
   const InPindingProducts = productsInventory.filter((product)=> product.status === "pending");
 
-  const approvedProductsCount = ApprovedProducts.reduce((total, product)=>{
-    return total + product.quantity;
-  }, 0)
-
-  const inPindingPoductsCount = InPindingProducts.reduce((total, product)=>{
-    return total + product.quantity;
-  },0)
+  const approvedProductsCount = ApprovedProducts.length; // Count approved products
+  const inPindingPoductsCount = InPindingProducts.length; // Count pending products
 
   const handleDeleteProduct = async (productId) => {
     try {
@@ -282,8 +275,8 @@ const InventoryManagement = () => {
               <Box size={24} color="#f2582c" />
             </div>
             <div style={modernStyles.statContent}>
-              <h3 style={modernStyles.statNumber}>{totalQuantity}</h3>
-              <p style={modernStyles.statLabel}>Total Items</p>
+              <h3 style={modernStyles.statNumber}>{totalProductsCount}</h3>
+              <p style={modernStyles.statLabel}>Total Products</p>
             </div>
           </div>
           <div style={modernStyles.statCard}>

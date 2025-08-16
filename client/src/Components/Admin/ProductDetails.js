@@ -33,9 +33,9 @@ function ProductDetails() {
     const fetchProductDetails = async () => {
         try {
             const response = await axios.get(
-                `${process.env.REACT_APP_LOCALHOST_URL}/products/product`,
+                `${process.env.REACT_APP_LOCALHOST_URL}/products`,
                 {
-                    params: { id } // query parameter instead of path
+                    params: { id }
                 }
             );
             setProduct(response.data);

@@ -14,6 +14,44 @@ function ManageOrdersV2() {
   const { username: sellerusername } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
 
+  // Helper function to get item status from order
+  const getItemStatus = (order, productId) => {
+    const item = order.items.find(item => item.productId === productId);
+    return item ? item.status : 'Pending';
+  };
+
+  // Helper function to get status icon
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'Pending':
+        return <Clock size={14} />;
+      case 'Approved':
+        return <Package size={14} />;
+      case 'Shipped':
+        return <CheckCircle size={14} />;
+      case 'Delivered':
+        return <CheckCircle size={14} />;
+      default:
+        return <Clock size={14} />;
+    }
+  };
+
+  // Helper function to get status styles
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'Pending':
+        return styles.statusPending;
+      case 'Approved':
+        return styles.statusProcessing;
+      case 'Shipped':
+        return styles.statusShipped;
+      case 'Delivered':
+        return styles.statusDelivered;
+      default:
+        return styles.statusPending;
+    }
+  };
+
   // Helper to fetch product details and add sellerEmail to items if missing
   async function enrichOrderItemsWithSellerEmail(order) {
     const enrichedItems = await Promise.all(order.items.map(async (item) => {
@@ -107,14 +145,65 @@ function ManageOrdersV2() {
 
   const handleItemStatusUpdate = async (orderId, productId, status) => {
     try {
-      await axios.put(
-        `${process.env.REACT_APP_LOCALHOST_URL}/orders/${orderId}/items/${productId}/status`,
-        { status }
+      console.log('Updating status:', { orderId, productId, status });
+      
+      // Update the order status in the backend using the correct route
+      const updateResponse = await axios.put(
+        `${process.env.REACT_APP_LOCALHOST_URL}/orders/item/status`,
+        { status },
+        {
+          params: {
+            orderId: orderId,
+            productId: productId
+          }
+        }
       );
-      const response = await axios.get(
-        `${process.env.REACT_APP_LOCALHOST_URL}/orders`
-      );
-      setOrders(response.data);
+      
+      console.log('Update response:', updateResponse.data);
+      
+      // Update the local state immediately for better UX
+      setProductOrders(prevProductOrders => {
+        const updated = { ...prevProductOrders };
+        if (updated[productId]) {
+          updated[productId] = updated[productId].map(order => {
+            if (order._id === orderId) {
+              // Update the specific item's status within the order
+              const updatedItems = order.items.map(item => {
+                if (item.productId === productId) {
+                  return { ...item, status: status };
+                }
+                return item;
+              });
+              return { ...order, items: updatedItems };
+            }
+            return order;
+          });
+        }
+        return updated;
+      });
+      
+      // Also refresh from backend to ensure consistency
+      setTimeout(async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_LOCALHOST_URL}/orders`
+          );
+          const ordersData = response.data;
+          
+          // Re-enrich and filter orders
+          const enrichedOrders = await Promise.all(ordersData.map(enrichOrderItemsWithSellerEmail));
+          const sellerOrders = enrichedOrders.filter(order =>
+            order.items.some(item => item.sellerEmail === sellerEmail)
+          );
+          setOrders(sellerOrders);
+          
+          // Refresh product orders data
+          fetchProductSellerEmails(sellerOrders);
+        } catch (refreshError) {
+          console.error("Error refreshing orders:", refreshError);
+        }
+      }, 500);
+      
     } catch (error) {
       console.error("Error updating item status:", error);
       setError("Failed to update item status");
@@ -181,9 +270,9 @@ function ManageOrdersV2() {
             {Object.keys(productOrders).map((productId) => (
               <div key={productId} style={styles.productSection}>
                 <div style={styles.productHeader}>
-                  <h3 style={styles.productTitle}>
+                  {/* <h3 style={styles.productTitle}>
                     Product ID: <span style={styles.productId}>{productId}</span>
-                  </h3>
+                  </h3> */}
                   <span style={styles.orderCount}>
                     {productOrders[productId].length} order{productOrders[productId].length !== 1 ? 's' : ''}
                   </span>
@@ -233,16 +322,29 @@ function ManageOrdersV2() {
 
                         {/* Status and Price */}
                         <div style={styles.orderMeta}>
-                          <div style={{
-                            ...styles.statusBadge,
-                            ...(order.status === "Completed" ? styles.statusCompleted : styles.statusPending)
-                          }}>
-                            {order.status === "Completed" ? (
-                              <CheckCircle size={14} />
-                            ) : (
-                              <Clock size={14} />
-                            )}
-                            <span>{order.status}</span>
+                          <div style={styles.statusSection}>
+                            <label style={styles.statusLabel}>Change Status:</label>
+                            <select
+                              value={getItemStatus(order, productId) || "Pending"}
+                              onChange={(e) => handleItemStatusUpdate(order._id, productId, e.target.value)}
+                              style={styles.statusSelect}
+                            >
+                              <option value="Pending">Pending</option>
+                              <option value="Approved">Approved</option>
+                              <option value="Shipped">Shipped</option>
+                              <option value="Delivered">Delivered</option>
+                            </select>
+                            {/* Current Status Display */}
+                            <div style={styles.currentStatusSection}>
+                              <span style={styles.currentStatusLabel}>Current:</span>
+                              <div style={{
+                                ...styles.statusBadge,
+                                ...getStatusStyle(getItemStatus(order, productId) || "Pending")
+                              }}>
+                                {getStatusIcon(getItemStatus(order, productId) || "Pending")}
+                                <span>{getItemStatus(order, productId) || "Pending"}</span>
+                              </div>
+                            </div>
                           </div>
                           <div style={styles.price}>
                             <DollarSign size={16} />
@@ -520,22 +622,62 @@ const styles = {
     alignItems: "center",
     marginBottom: "16px",
   },
+  statusSection: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+  statusLabel: {
+    fontSize: "12px",
+    color: "#6b7280",
+    fontWeight: "500",
+  },
+  statusSelect: {
+    padding: "6px 8px",
+    border: "1px solid #d1d5db",
+    borderRadius: "6px",
+    fontSize: "12px",
+    backgroundColor: "#fff",
+    color: "#374151",
+    cursor: "pointer",
+    minWidth: "100px",
+  },
+  currentStatusSection: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    marginTop: "6px",
+  },
+  currentStatusLabel: {
+    fontSize: "11px",
+    color: "#6b7280",
+    fontWeight: "500",
+  },
   statusBadge: {
     display: "flex",
     alignItems: "center",
     gap: "4px",
     padding: "4px 8px",
     borderRadius: "6px",
-    fontSize: "12px",
+    fontSize: "11px",
     fontWeight: "500",
-  },
-  statusCompleted: {
-    backgroundColor: "#d1fae5",
-    color: "#065f46",
+    textTransform: "capitalize",
   },
   statusPending: {
     backgroundColor: "#fef3c7",
     color: "#92400e",
+  },
+  statusProcessing: {
+    backgroundColor: "#dbeafe",
+    color: "#1e40af",
+  },
+  statusShipped: {
+    backgroundColor: "#d1fae5",
+    color: "#065f46",
+  },
+  statusDelivered: {
+    backgroundColor: "#dcfce7",
+    color: "#166534",
   },
   price: {
     display: "flex",
